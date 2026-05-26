@@ -1,0 +1,6 @@
+{
+  "name": "Coach de Course IA",
+  "description": "Assistant intelligent pour la course à pied : plans d'entraînement personnalisés, conseils de rythme et chat interactif avec un coach IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
