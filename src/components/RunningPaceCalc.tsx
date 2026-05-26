@@ -4,14 +4,19 @@
  */
 
 import React, { useState } from 'react';
-import { Activity, Flame, Hourglass, HelpCircle } from 'lucide-react';
+import { Activity, Flame, Hourglass } from 'lucide-react';
+import { i18n, Language } from '../i18n';
 
-export default function RunningPaceCalc() {
+interface RunningPaceCalcProps {
+  language: Language;
+}
+
+export default function RunningPaceCalc({ language }: RunningPaceCalcProps) {
+  const t = i18n[language];
   const [paceMin, setPaceMin] = useState<number>(5);
   const [paceSec, setPaceSec] = useState<number>(30);
   const [speed, setSpeed] = useState<number>(10.9);
 
-  // Convert Pace to Speed: Speed (km/h) = 60 / (min + sec/60)
   const handlePaceChange = (min: number, sec: number) => {
     setPaceMin(min);
     setPaceSec(sec);
@@ -22,7 +27,6 @@ export default function RunningPaceCalc() {
     }
   };
 
-  // Convert Speed to Pace: Total Minutes = 60 / Speed
   const handleSpeedChange = (newSpeed: number) => {
     setSpeed(newSpeed);
     if (newSpeed > 0) {
@@ -34,30 +38,40 @@ export default function RunningPaceCalc() {
     }
   };
 
-  const presets = [
+  const presets = language === 'fr' ? [
     { name: 'Endurance de base', speed: 8.5, label: '7:03 min/km' },
     { name: 'Footing Moyen', speed: 10.0, label: '6:00 min/km' },
     { name: 'Allure Marathon', speed: 11.5, label: '5:13 min/km' },
     { name: 'Seuil Athlétique', speed: 13.0, label: '4:37 min/km' },
     { name: 'VMA / Fractionné', speed: 15.0, label: '4:00 min/km' },
-  ];  return (
+  ] : [
+    { name: 'Easy Run', speed: 8.5, label: '7:03 min/km' },
+    { name: 'Steady Run', speed: 10.0, label: '6:00 min/km' },
+    { name: 'Marathon Pace', speed: 11.5, label: '5:13 min/km' },
+    { name: 'Lactate Threshold', speed: 13.0, label: '4:37 min/km' },
+    { name: 'VO2 Max / Intervals', speed: 15.0, label: '4:00 min/km' },
+  ];
+
+  return (
     <div id="pace-calc" className="bg-[#0F0F0F] border border-white/10 p-6 relative overflow-hidden">
-      
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-8 h-8 bg-[#CCFF00] flex items-center justify-center text-black font-black">
-          ⚡
+        <div className="w-8 h-8 bg-[#CCFF00] flex items-center justify-center text-black">
+          <Activity className="w-4 h-4" />
         </div>
         <div>
-          <p className="text-[10px] font-black text-[#CCFF00] uppercase tracking-widest leading-none">Fitness Calculator</p>
-          <h3 className="font-display font-black text-xl text-white uppercase tracking-tighter italic mt-1">Convertisseur d'Allure</h3>
+          <p className="text-[10px] font-black text-[#CCFF00] uppercase tracking-widest leading-none">
+            {language === 'fr' ? 'CONVERTISSEUR ATHLÉTIQUE' : 'ATHLETIC CONVERTER'}
+          </p>
+          <h3 className="font-display font-black text-xl text-white uppercase tracking-tighter italic mt-1">
+            {t.paceCalcTitle}
+          </h3>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* Pace input block */}
         <div className="bg-black/40 p-4 border border-white/10">
           <label className="block text-[9px] font-black uppercase tracking-widest text-white/40 mb-2">
-            Allure Cible (MIN / KM)
+            {language === 'fr' ? 'ALLURE CIBLE (MIN / KM)' : 'TARGET PACE (MIN / KM)'}
           </label>
           <div className="flex items-center gap-2 mb-3">
             <input
@@ -80,14 +94,13 @@ export default function RunningPaceCalc() {
             <span className="text-[11px] font-black uppercase tracking-wider text-white/50 pl-1">/ KM</span>
           </div>
           <p className="text-[10px] text-white/40 leading-relaxed font-mono uppercase">
-            Durée requise pour courir 1 kilomètre de façon nominale.
+            {language === 'fr' ? 'Durée requise pour courir 1 kilomètre.' : 'Required duration to run 1 kilometer.'}
           </p>
         </div>
 
-        {/* Speed input block */}
         <div className="bg-black/40 p-4 border border-white/10">
           <label className="block text-[9px] font-black uppercase tracking-widest text-white/40 mb-2">
-            Vitesse Équivalente (KM/H)
+            {language === 'fr' ? 'VITESSE ÉQUIVALENTE (KM/H)' : 'EQUIVALENT SPEED (KM/H)'}
           </label>
           <div className="flex items-center gap-3 mb-3">
             <input
@@ -99,7 +112,7 @@ export default function RunningPaceCalc() {
               onChange={(e) => handleSpeedChange(parseFloat(e.target.value) || 0)}
               className="w-20 bg-[#1A1A1A] border border-white/10 py-2 px-3 text-center text-xl font-bold font-mono text-[#CCFF00] focus:outline-none focus:border-[#CCFF00] rounded-none"
             />
-            <span className="text-[11px] font-black uppercase tracking-wider text-white/50">KM / H</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-white/50">KM/H</span>
             <input
               type="range"
               min="5"
@@ -111,15 +124,14 @@ export default function RunningPaceCalc() {
             />
           </div>
           <p className="text-[10px] text-white/40 leading-relaxed font-mono uppercase">
-            Recommandé pour configurer la vitesse sur tapis de course mécanique.
+            {language === 'fr' ? 'Recommandé pour configurer la vitesse sur tapis.' : 'Recommended for treadmill speed configuration.'}
           </p>
         </div>
       </div>
 
-      {/* Preset values */}
       <div>
         <h4 className="text-[9px] font-black uppercase tracking-widest text-[#CCFF00] mb-3 flex items-center gap-1.5">
-          <Flame className="w-3.5 h-3.5 text-[#CCFF00]" /> CONVERTISSEUR ANALYTIQUE : PRESETS
+          <Flame className="w-3.5 h-3.5 text-[#CCFF00]" /> {language === 'fr' ? 'PRESETS POUR ALLURES' : 'ALLURE PRESETS'}
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
           {presets.map((preset) => (
@@ -129,8 +141,12 @@ export default function RunningPaceCalc() {
               onClick={() => handleSpeedChange(preset.speed)}
               className="bg-[#1A1A1A] hover:bg-[#CCFF00] hover:text-black border border-white/10 hover:border-[#CCFF00] transition-all text-left p-2.5 rounded-none flex flex-col justify-between h-14"
             >
-              <span className="text-[9px] font-black uppercase tracking-tight leading-tight block truncate text-inherit">{preset.name}</span>
-              <span className="text-[10px] font-mono font-bold text-inherit leading-none mt-1 opacity-70">{preset.speed} km/h • {preset.label}</span>
+              <span className="text-[9px] font-black uppercase tracking-tight leading-tight block truncate text-inherit">
+                {preset.name}
+              </span>
+              <span className="text-[10px] font-mono font-bold text-inherit leading-none mt-1 opacity-70">
+                {preset.speed} km/h • {preset.label}
+              </span>
             </button>
           ))}
         </div>

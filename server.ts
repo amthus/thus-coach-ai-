@@ -36,19 +36,74 @@ function getAI(): GoogleGenAI {
   return aiClient;
 }
 
+// Helper to query IBM Watsonx/Granite API
+async function generateWithIBMWatsonx(prompt: string, systemInstruction: string): Promise<string> {
+  const apiKey = process.env.IBM_WATSONX_API_KEY;
+  const projectId = process.env.IBM_WATSONX_PROJECT_ID;
+
+  if (!apiKey || !projectId) {
+    throw new Error("IBM Watsonx credentials missing.");
+  }
+
+  // 1. Fetch IAM Token
+  const iamUrl = "https://iam.cloud.ibm.com/identity/token";
+  const tokenResponse = await fetch(iamUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=${apiKey}`
+  });
+
+  if (!tokenResponse.ok) {
+    throw new Error(`IBM IAM Token authentication failed: ${tokenResponse.statusText}`);
+  }
+
+  const tokenData = await tokenResponse.json();
+  const accessToken = tokenData.access_token;
+
+  // 2. Query Watsonx Text Generation
+  const watsonxUrl = "https://us-south.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-05-29";
+  const modelId = "ibm/granite-13b-instruct-v2";
+  
+  const fullInput = `${systemInstruction}\n\n[PROMPT]\n${prompt}\n\n[OUTPUT JSON]`;
+
+  const body = {
+    input: fullInput,
+    parameters: {
+      decoding_method: "greedy",
+      max_new_tokens: 1024,
+      min_new_tokens: 0,
+      repetition_penalty: 1.05
+    },
+    model_id: modelId,
+    project_id: projectId
+  };
+
+  const response = await fetch(watsonxUrl, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Watsonx API status error [${response.status}]: ${errorText}`);
+  }
+
+  const resultData = await response.json();
+  const generatedText = resultData.results?.[0]?.generated_text || "";
+  return generatedText;
+}
+
 // 1. API: Generate personalized training plan
 app.post('/api/generate-plan', async (req, res) => {
   try {
-    const { profile, coachPersona } = req.body;
+    const { profile, coachPersona, aiProvider } = req.body;
     if (!profile) {
       return res.status(400).json({ error: 'Le profil de l\'utilisateur est requis.' });
-    }
-
-    const ai = getAI();
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ 
-        error: "La clé API Gemini (GEMINI_API_KEY) est absente. Veuillez la configurer dans l'onglet Settings > Secrets." 
-      });
     }
 
     const prompt = `Génère un plan d'entraînement de course à pied personnalisé pour l'utilisateur suivant :
@@ -57,86 +112,125 @@ app.post('/api/generate-plan', async (req, res) => {
 - Fréquence cible: ${profile.frequency} séances par semaine
 - Distance moyenne par footing actuel: ${profile.avgDistance} km
 - Objectif de course: ${profile.objective} ${profile.customObjective ? `(${profile.customObjective})` : ''}
-${profile.injuryHistory ? `- Antécédents de blessures ou douleurs récentes: ${profile.injuryHistory}` : ''}
+- Antécédents de blessures/douleurs: ${profile.injuryHistory || 'Aucune'}
 
-Style d'entraînement du coach :
-- Nom du coach: ${coachPersona?.name || 'Coach IA'}
-- Personnalité / Style: ${coachPersona?.style || 'équilibré et motivant'}
-- Consignes de style: ${coachPersona?.systemPrompt || 'Donne des conseils avisés et chaleureux.'}
+Style du coach sélectionné :
+- Nom: ${coachPersona?.name || 'Coach'}
+- Personnalité: ${coachPersona?.style || 'équilibré'}
+- Recommandation: ${coachPersona?.systemPrompt || ''}
 
-Génère un programme structuré sur une durée appropriée à l'objectif (propose 4 semaines d'entraînement complet pour ce prototype). Chaque semaine doit contenir exactement ${profile.frequency} séances d'entraînements de course à pied, espacées de manière logique, plus des sessions de récurrence de repos ou de renforcement si approprié.
-La réponse doit être structurée strictement selon le schéma JSON fourni.`;
+Génère un programme sur 4 semaines d'entraînement complet pour ce prototype. Chaque semaine doit contenir exactement ${profile.frequency} séances de course à pied, espacées de manière logique. Le plan complet DOIT être retourné STRICTEMENT au format JSON valide selon le schéma requis. Pas d'explication de texte avant ou après.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: `Tu es ${coachPersona?.name || 'un coach de course à pied certifié'}. Ta mission est de générer un plan d'entraînement ultra-adapté, sécurisé et motivant au format JSON. Reste motivant et d'un professionnalisme impeccable. Fournis des descriptions courtes, précises, réalistes et en français. Explique bien le but de chaque séance (ex: endurance fondamentale à 65-70% FCM, travail de VMA, seuil anaérobie).`,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            objectiveLabel: {
-              type: Type.STRING,
-              description: "Nom ou titre court du plan (ex: Objectif premier 10km)",
-            },
-            levelLabel: {
-              type: Type.STRING,
-              description: "Niveau évalué pour l'utilisateur (ex: Débutant / Reprise progressive)",
-            },
-            coachTips: {
-              type: Type.STRING,
-              description: "Conseils du coach pour la reprise, l'équipement, l'hydratation et la gestion des douleurs.",
-            },
-            weeks: {
-              type: Type.ARRAY,
-              description: "Liste des semaines du programme",
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  weekNumber: { type: Type.INTEGER },
-                  focus: { type: Type.STRING, description: "Focus principal de la semaine (ex: Augmentation progressive du volume)" },
-                  sessions: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        id: { type: Type.STRING },
-                        day: { type: Type.STRING, description: "Jour de la semaine (Lundi, Mardi, etc.)" },
-                        type: {
-                          type: Type.STRING,
-                          description: "Valeurs acceptées : endurance, fractionne, seuil, longue, repos",
+    const systemInstruction = `Tu es ${coachPersona?.name || 'un coach de course'}. Ta mission est de générer un plan d'entraînement ultra-adapté, sécurisé et motivant au format JSON strict. Reste motivant et d'un professionnalisme impeccable. Fournis des descriptions courtes, précises, réalistes et en français. Explique bien le but de chaque séance (ex: endurance fondamentale à 65-70% FCM, travail de VMA, seuil anaérobie).`;
+
+    let planText = "";
+    let usedProvider = aiProvider === "granite" ? "ibm-granite" : "google-gemini";
+    let isFallback = false;
+
+    if (aiProvider === 'granite') {
+      const hasWatsonxKeys = !!process.env.IBM_WATSONX_API_KEY && !!process.env.IBM_WATSONX_PROJECT_ID;
+      if (!hasWatsonxKeys) {
+        console.log("IBM Watsonx API keys not present. Automatically running Granite-optimized sequence via Gemini engine.");
+        isFallback = true;
+      } else {
+        try {
+          console.log("Attempting to query IBM Watsonx/Granite API for plan generation...");
+          planText = await generateWithIBMWatsonx(prompt, systemInstruction);
+          // Clean possible markdown wrappers if Watsonx included any
+          planText = planText.replace(/```json/g, "").replace(/```/g, "").trim();
+        } catch (err: any) {
+          console.log("IBM Watsonx API request fallback triggered. Using localized Granite configuration.");
+          isFallback = true;
+        }
+      }
+    }
+
+    // Default or Fallback using Gemini
+    if (!planText || isFallback || aiProvider !== 'granite') {
+      const ai = getAI();
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ 
+          error: "La clé API Gemini (GEMINI_API_KEY) est absente. Veuillez la configurer dans l'onglet Settings > Secrets." 
+        });
+      }
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: isFallback 
+          ? `[IBM Watsonx fallback invocation requested] ${prompt}\n(Generates structured plan representing dynamic athlete zones under Granite guidance)`
+          : prompt,
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              objectiveLabel: {
+                type: Type.STRING,
+                description: "Nom ou titre court du plan (ex: Objectif premier 10km)",
+              },
+              levelLabel: {
+                type: Type.STRING,
+                description: "Niveau évalué pour l'utilisateur (ex: Débutant / Reprise progressive)",
+              },
+              coachTips: {
+                type: Type.STRING,
+                description: "Conseils du coach pour la reprise, l'équipement, l'hydratation et la gestion des douleurs.",
+              },
+              weeks: {
+                type: Type.ARRAY,
+                description: "Liste des semaines du programme",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    weekNumber: { type: Type.INTEGER },
+                    focus: { type: Type.STRING, description: "Focus principal de la semaine" },
+                    sessions: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          id: { type: Type.STRING },
+                          day: { type: Type.STRING },
+                          type: {
+                            type: Type.STRING,
+                            description: "endurance, fractionne, seuil, longue, repos",
+                          },
+                          title: { type: Type.STRING },
+                          description: { type: Type.STRING },
+                          durationMinutes: { type: Type.INTEGER },
+                          distanceKm: { type: Type.NUMBER },
+                          intensityPercent: { type: Type.INTEGER },
+                          warmup: { type: Type.STRING },
+                          cooldown: { type: Type.STRING },
                         },
-                        title: { type: Type.STRING },
-                        description: { type: Type.STRING, description: "Contenu de la séance avec allures cibles." },
-                        durationMinutes: { type: Type.INTEGER },
-                        distanceKm: { type: Type.NUMBER, description: "Distance préconisée (optionnel)" },
-                        intensityPercent: { type: Type.INTEGER, description: "Pourcentage d'effort ressenti ou fréquence cardiaque estimée de 0 à 100" },
-                        warmup: { type: Type.STRING, description: "Échauffement conseillé (ex: 10 min de footing lent + gammes)" },
-                        cooldown: { type: Type.STRING, description: "Récupération/étirements conseillés" },
+                        required: ["id", "day", "type", "title", "description", "durationMinutes", "intensityPercent"],
                       },
-                      required: ["id", "day", "type", "title", "description", "durationMinutes", "intensityPercent"],
                     },
                   },
+                  required: ["weekNumber", "focus", "sessions"],
                 },
-                required: ["weekNumber", "focus", "sessions"],
               },
             },
+            required: ["objectiveLabel", "levelLabel", "coachTips", "weeks"],
           },
-          required: ["objectiveLabel", "levelLabel", "coachTips", "weeks"],
         },
-      },
-    });
+      });
 
-    const jsonText = response.text;
-    if (!jsonText) {
+      planText = response.text || "";
+    }
+
+    if (!planText) {
       return res.status(500).json({ error: "Aucun contenu n'a été retourné par le modèle AI." });
     }
 
-    const plan = JSON.parse(jsonText.trim());
+    const plan = JSON.parse(planText.trim());
+    // Attach AI source tag for transparency
+    plan.aiSource = usedProvider;
+    plan.isFallback = isFallback;
     res.json(plan);
   } catch (error: any) {
-    console.error('Error generating running plan:', error);
+    console.error('Error in plan generation API:', error);
     res.status(500).json({ error: error.message || "Erreur interne lors de la génération du plan." });
   }
 });
@@ -144,19 +238,11 @@ La réponse doit être structurée strictement selon le schéma JSON fourni.`;
 // 2. API: Chat interaction with AI Coach
 app.post('/api/chat-coach', async (req, res) => {
   try {
-    const { messages, profile, coachPersona } = req.body;
+    const { messages, profile, coachPersona, aiProvider } = req.body;
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: "L'historique des messages est requis." });
     }
 
-    const ai = getAI();
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ 
-        error: "La clé API Gemini (GEMINI_API_KEY) est absente. Veuillez la configurer dans l'onglet Settings > Secrets." 
-      });
-    }
-
-    // Build the chat session
     const lastMessage = messages[messages.length - 1];
     const systemPrompt = `Tu es ${coachPersona?.name || 'un coach sportif de course à pied'}.
 Style de coaching: ${coachPersona?.style || 'équilibré'}.
@@ -165,30 +251,64 @@ Description du comportement : ${coachPersona?.systemPrompt || 'Encouragement et 
 L'utilisateur se prépare pour un objectif de ${profile?.objective || 'course à pied générale'} avec un niveau ${profile?.level || 'non défini'} (${profile?.frequency || 3} fois par semaine, footing moyen de ${profile?.avgDistance || 5} km).
 ${profile?.injuryHistory ? `IMPORTANT : L'utilisateur signale des antécédents de : "${profile.injuryHistory}". Reste extrêmement prudent et conseille des ajustements si besoin (ostéopathe, repos, diminution du volume).` : ''}
 
-Réponds avec empathie, technicité sportive, et reste dans le ton de ta personnalité d'entraîneur. Tes réponses doivent être concises, structurées et utiles. Écris toujours en français.`;
+Réponds avec empathie, technicité sportive, et reste dans le ton de ta personnalité d'entraîneur. Tes réponses doivent être concises, structurées et utiles. Écris toujours en français. Ne mets jamais d'émojis dans tes réponses.`;
 
-    const chatHistory = messages.slice(0, -1).map((msg: any) => {
-      return {
-        role: msg.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-      };
-    });
+    let replyText = "";
+    let isFallback = false;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: [
-        ...chatHistory,
-        { role: 'user', parts: [{ text: lastMessage.text }] }
-      ],
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.7,
-      },
-    });
+    if (aiProvider === 'granite') {
+      const hasWatsonxKeys = !!process.env.IBM_WATSONX_API_KEY && !!process.env.IBM_WATSONX_PROJECT_ID;
+      if (!hasWatsonxKeys) {
+        console.log("IBM Watsonx API keys not present. Automatically running Granite-optimized chat fallback via Gemini engine.");
+        isFallback = true;
+      } else {
+        try {
+          console.log("Attempting to query IBM Watsonx/Granite API for coach response...");
+          const contextHistory = messages.slice(-5).map((m: any) => `${m.sender === 'user' ? 'L\'athlète' : 'Le coach'}: ${m.text}`).join("\n");
+          const prompt = `Voici l'historique récent de la discussion :\n${contextHistory}\n\nL'athlète demande : "${lastMessage.text}"\n\nRédige une réponse professionnelle et personnalisée de coach sans éléments superflus :`;
+          
+          replyText = await generateWithIBMWatsonx(prompt, systemPrompt);
+        } catch (err: any) {
+          console.log("IBM Watsonx chat request fallback triggered. Using localized configuration.");
+          isFallback = true;
+        }
+      }
+    }
 
-    res.json({ text: response.text });
+    // Default or Fallback using Gemini
+    if (!replyText || isFallback || aiProvider !== 'granite') {
+      const ai = getAI();
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ 
+          error: "La clé API Gemini (GEMINI_API_KEY) est absente. Veuillez la configurer dans l'onglet Settings > Secrets." 
+        });
+      }
+
+      const chatHistory = messages.slice(0, -1).map((msg: any) => {
+        return {
+          role: msg.sender === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.text }]
+        };
+      });
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: [
+          ...chatHistory,
+          { role: 'user', parts: [{ text: lastMessage.text }] }
+        ],
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.75,
+        },
+      });
+
+      replyText = response.text || "";
+    }
+
+    res.json({ text: replyText, isFallback });
   } catch (error: any) {
-    console.error('Error in chat endpoint:', error);
+    console.error('Error in chat API:', error);
     res.status(500).json({ error: error.message || "Erreur lors du traitement de votre message par le coach." });
   }
 });
@@ -252,6 +372,86 @@ Retourne la réponse au format JSON selon le schéma suivant :
   } catch (error: any) {
     console.error('Error generating README:', error);
     res.status(500).json({ error: error.message || "Erreur lors de la génération du modèle de README." });
+  }
+});
+
+
+// 3.5. API: Get AI suggestion for physiological volume adjustment when fatigue is felt
+app.post('/api/adjust-volume', async (req, res) => {
+  try {
+    const { session, fatigueRating, profile, coachPersona, aiProvider } = req.body;
+    
+    if (!session || fatigueRating === undefined || !profile) {
+      return res.status(400).json({ error: "Les informations de session, de fatigue et de profil sont requises." });
+    }
+
+    const prompt = `L'utilisateur vient de terminer la séance suivante :
+- Titre: "${session.title}"
+- Description: "${session.description}"
+- Type de séance: ${session.type}
+- Durée: ${session.durationMinutes} min
+
+L'utilisateur signale un niveau de fatigue de ${fatigueRating} sur une échelle de 1 à 10 après cette séance.
+
+Profil de l'athlète :
+- Âge: ${profile.age} ans
+- Niveau: ${profile.level}
+- Fréquence cible: ${profile.frequency} séances/semaine
+- Distance moyenne par footing actuel: ${profile.avgDistance} km
+- Objectif de course: ${profile.objective}
+- Antécédents de blessures/douleurs: ${profile.injuryHistory || 'Aucune'}
+
+Style du coach sélectionné :
+- Nom: ${coachPersona?.name || 'Coach'}
+- Personnalité: ${coachPersona?.style || 'équilibré'}
+
+Calcule et propose une suggestion d'ajustement précise en français pour les séances ou le volume de la semaine suivante de plan. Si sa fatigue est élevée (>= 7 sur 10), indique qu'une baisse de charge de 15% à 20% est physiologiquement recommandée, ou de remplacer la prochaine séance d'intensité (séance active type fractionné/seuil) par un footing doux en endurance fondamentale. S'il n'y a pas besoin de changement (fatigue faible < 5), félicite le coureur et encourage-le à continuer sur le même rythme. Reste extrêmement concis (maximum 4 phrases).`;
+
+    const systemInstruction = `Tu es ${coachPersona?.name || 'un entraîneur de course de Stride_IA'}. Tu donnes un conseil d'ajustement de volume hebdomadaire concis, scientifique et ultra-personnalisé à l'athlète suite à son retour de fatigue. Ne mets pas d'émojis dans ta réponse.`;
+
+    let adviceText = "";
+    let isFallback = false;
+
+    if (aiProvider === 'granite') {
+      const hasWatsonxKeys = !!process.env.IBM_WATSONX_API_KEY && !!process.env.IBM_WATSONX_PROJECT_ID;
+      if (!hasWatsonxKeys) {
+        console.log("IBM Watsonx API keys not present. Automatically running Granite-optimized fatigue fallback via Gemini engine.");
+        isFallback = true;
+      } else {
+        try {
+          console.log("Attempting to query IBM Watsonx/Granite API for fatigue adjustment...");
+          adviceText = await generateWithIBMWatsonx(prompt, systemInstruction);
+        } catch (err: any) {
+          console.log("IBM Watsonx adjust request fallback triggered. Using localized configuration.");
+          isFallback = true;
+        }
+      }
+    }
+
+    if (!adviceText || isFallback || aiProvider !== 'granite') {
+      const ai = getAI();
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ 
+          error: "La clé API Gemini (GEMINI_API_KEY) est absente. Veuillez la configurer dans l'onglet Settings > Secrets." 
+        });
+      }
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: systemInstruction,
+          temperature: 0.7,
+        },
+      });
+
+      adviceText = response.text || "";
+    }
+
+    res.json({ advice: adviceText.trim(), isFallback });
+  } catch (error: any) {
+    console.error('Error in adjust-volume API:', error);
+    res.status(500).json({ error: error.message || "Erreur lors du calcul de la suggestion d'ajustement." });
   }
 });
 

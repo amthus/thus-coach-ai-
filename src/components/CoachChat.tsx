@@ -5,7 +5,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, CoachPersona, UserProfile } from '../types';
-import { Send, HelpCircle, User, Brain, Dumbbell, Sparkles } from 'lucide-react';
+import { Send, User, Sparkles } from 'lucide-react';
+import { i18n, Language } from '../i18n';
 
 interface Props {
   profile: UserProfile;
@@ -13,11 +14,13 @@ interface Props {
   messages: ChatMessage[];
   onSendMessage: (text: string) => Promise<void>;
   loading: boolean;
+  language: Language;
 }
 
-export default function CoachChat({ profile, activeCoach, messages, onSendMessage, loading }: Props) {
+export default function CoachChat({ profile, activeCoach, messages, onSendMessage, loading, language }: Props) {
   const [inputText, setInputText] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const t = i18n[language];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,22 +33,27 @@ export default function CoachChat({ profile, activeCoach, messages, onSendMessag
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const quickReplies = [
-    { label: "Douleur au genou/mollet, que faire ?", value: "J'ai ressenti une petite douleur ou gêne musculaire à la jambe lors de ma dernière course. Quels ajustements me conseilles-tu ?" },
-    { label: "Comment travailler ma respiration ?", value: "Quels sont tes conseils pour ajuster ma respiration en course à pied, particulièrement sur la séance d'endurance fondamentale ou de fractionné ?" },
-    { label: "Que manger avant de courir ?", value: "Que me recommandes-tu de manger ou de boire avant d'entamer ma séance de course, et combien de temps avant ?" },
-    { label: "J'ai manqué un entraînement !", value: "J'ai loupé ma dernière séance d'entraînement pour cause de fatigue ou manque de temps. Dois-je la rattraper ?" },
+  const quickReplies = language === 'fr' ? [
+    { label: "Douleur musculaire, que faire ?", value: "J'ai ressenti une petite gêne musculaire à la jambe lors de ma dernière course. Quels ajustements conseilles-tu ?" },
+    { label: "Comment travailler ma respiration ?", value: "Quels sont tes conseils pour ajuster ma respiration en course à pied, particulièrement sur l'endurance fondamentale ?" },
+    { label: "Que manger avant de courir ?", value: "Que recommandes-tu de manger avant d'entamer une séance de course, et combien de temps avant ?" },
+    { label: "J'ai manqué un entraînement !", value: "J'ai raté ma dernière séance d'entraînement. Comment puis-je l'ajuster ou la rattraper ?" },
+  ] : [
+    { label: "Sore muscles, what to do?", value: "I felt some muscle soreness/stiffness in my legs during my last run. What adjustments do you recommend?" },
+    { label: "How to improve my breathing?", value: "What are your tips for adjusting my breathing during runs, especially for low HR aerobic base runs?" },
+    { label: "What to eat before running?", value: "What do you recommend to eat or drink before starting a running session, and how long before?" },
+    { label: "I missed a workout session!", value: "I missed my last scheduled training session. Should I try to catch up or skip it?" },
   ];
 
   return (
     <div id="coach-chat" className="bg-[#0F0F0F] border border-white/10 flex flex-col h-[520px] shadow-xl overflow-hidden relative">
-      
-      {/* Header of Coach Pane */}
       <div className="bg-[#151515] px-5 py-4 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <span className="text-3xl">{activeCoach.avatar}</span>
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#CCFF00] border border-black rounded-full" />
+            <div className="w-10 h-10 bg-[#1A1A1A] border border-white/10 flex items-center justify-center font-mono font-black text-xs text-[#CCFF00]">
+              {activeCoach.avatar}
+            </div>
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#CCFF00] border border-black rounded-none" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
@@ -56,13 +64,11 @@ export default function CoachChat({ profile, activeCoach, messages, onSendMessag
           </div>
         </div>
 
-        {/* Persona Pill tag */}
         <span className="text-[9px] font-black uppercase tracking-wider text-[#CCFF00] px-2 py-0.5 bg-[#CCFF00]/10 border border-[#CCFF00]/20 rounded-none">
           {activeCoach.style}
         </span>
       </div>
 
-      {/* Messages Scroll viewport */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         {messages.map((msg) => {
           const isUser = msg.sender === 'user';
@@ -71,16 +77,14 @@ export default function CoachChat({ profile, activeCoach, messages, onSendMessag
               key={msg.id}
               className={`flex gap-3 max-w-[85%] ${isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
             >
-              {/* Avatar circle */}
               <div className={`p-2 rounded-none shrink-0 h-9 w-9 flex items-center justify-center font-bold border ${
                 isUser 
                   ? 'bg-[#1A1A1A] border-white/15 text-white' 
                   : 'bg-[#CCFF00]/10 border-[#CCFF00]/25 text-[#CCFF00]'
               }`}>
-                {isUser ? <User className="w-4 h-4" /> : <span>{activeCoach.avatar}</span>}
+                {isUser ? <User className="w-4 h-4" /> : <span className="font-mono text-xs">{activeCoach.avatar}</span>}
               </div>
 
-              {/* Message bubble */}
               <div className={`relative px-4 py-3 rounded-none text-white text-sm whitespace-pre-line leading-relaxed ${
                 isUser 
                   ? 'bg-[#CCFF00] text-black font-semibold' 
@@ -95,11 +99,10 @@ export default function CoachChat({ profile, activeCoach, messages, onSendMessag
           );
         })}
 
-        {/* AI typing fallback */}
         {loading && (
           <div className="flex gap-3 mr-auto max-w-[85%]">
-            <div className="bg-[#CCFF00]/10 border border-[#CCFF00]/20 p-2 rounded-none shrink-0 h-9 w-9 flex items-center justify-center">
-              <span>{activeCoach.avatar}</span>
+            <div className="bg-[#CCFF00]/10 border border-[#CCFF00]/20 p-2 rounded-none shrink-0 h-9 w-9 flex items-center justify-center font-mono font-black text-xs text-[#CCFF00]">
+              {activeCoach.avatar}
             </div>
             <div className="bg-[#151515] border border-white/10 px-4 py-3.5 rounded-none flex items-center gap-1.5">
               <span className="w-2 h-2 bg-[#CCFF00] rounded-none animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -111,7 +114,6 @@ export default function CoachChat({ profile, activeCoach, messages, onSendMessag
         <div ref={chatEndRef} />
       </div>
 
-      {/* Suggestion Quick Chips */}
       {messages.length < 3 && !loading && (
         <div className="px-5 py-2.5 bg-black/40 border-t border-white/10 overflow-x-auto flex items-center gap-2">
           <span className="text-[9px] font-black uppercase tracking-widest text-white/40 font-mono shrink-0">Suggestions:</span>
@@ -128,13 +130,12 @@ export default function CoachChat({ profile, activeCoach, messages, onSendMessag
         </div>
       )}
 
-      {/* Message submit form input field */}
       <form onSubmit={handleSubmit} className="border-t border-white/10 p-3 bg-black flex gap-2">
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={`Parlez à votre coach athlétique ...`}
+          placeholder={t.coachChatPlaceholder}
           disabled={loading}
           className="flex-1 bg-[#1A1A1A] border border-white/10 rounded-none px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#CCFF00] disabled:opacity-50 font-bold"
         />
