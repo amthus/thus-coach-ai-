@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   UserProfile, 
   TrainingPlan, 
@@ -39,7 +40,10 @@ import {
   Clock,
   Settings,
   Check,
-  Printer
+  Printer,
+  Menu,
+  User,
+  Calculator
 } from 'lucide-react';
 
 const coaches: CoachPersona[] = [
@@ -70,6 +74,27 @@ const coaches: CoachPersona[] = [
 ];
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashProgress, setSplashProgress] = useState(0);
+
+  useEffect(() => {
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.floor(Math.random() * 5) + 2; // Jump between 2 and 6% each tick
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        setSplashProgress(100);
+        clearInterval(interval);
+        setTimeout(() => {
+          setShowSplash(false);
+        }, 300); // smooth exit transition delay
+      } else {
+        setSplashProgress(currentProgress);
+      }
+    }, 40); // Animates loading process over ~1.2-1.8s
+    return () => clearInterval(interval);
+  }, []);
+
   const [view, setView] = useState<'landing' | 'app'>('landing');
   const [language, setLanguage] = useState<Language>('fr');
 
@@ -87,7 +112,8 @@ export default function App() {
   const [plan, setPlan] = useState<TrainingPlan | null>(null);
   const [completedSessions, setCompletedSessions] = useState<Record<string, boolean>>({});
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [activeTab, setActiveTab] = useState<'plan' | 'chat' | 'physiology'>('plan');
+  const [activeTab, setActiveTab] = useState<'profile' | 'pace' | 'plan' | 'chat' | 'physiology'>('plan');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
@@ -590,10 +616,90 @@ export default function App() {
     }
   };
 
+  const renderSplashScreen = () => (
+    <AnimatePresence>
+      {showSplash && (
+        <motion.div
+          key="splash-screen"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="fixed inset-0 z-[10000] bg-[#0A0A0A] flex flex-col items-center justify-center p-6 text-white font-mono select-none"
+        >
+          {/* Grid Pattern overlay for tech aesthetic */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#CCFF00]/[0.02] via-transparent to-transparent pointer-events-none" />
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+            style={{
+              backgroundImage: `radial-gradient(#CCFF00 1px, transparent 1px)`,
+              backgroundSize: '24px 24px'
+            }}
+          />
+
+          <div className="max-w-xs w-full text-center space-y-8 relative z-[10001] flex flex-col items-center">
+            {/* Rotating glowing brand diamond logo */}
+            <div className="relative">
+              <motion.div
+                animate={{ 
+                  rotate: [45, 225, 225, 405], 
+                  scale: [1, 1.15, 1.15, 1] 
+                }}
+                transition={{ 
+                  duration: 2.5, 
+                  ease: "easeInOut", 
+                  repeat: Infinity 
+                }}
+                className="w-14 h-14 bg-[#CCFF00] rotate-45 shadow-[0_0_40px_rgba(204,255,0,0.4)] relative flex items-center justify-center"
+              />
+              <div className="absolute inset-0 w-14 h-14 bg-[#CCFF00] rotate-45 blur-lg opacity-45 animate-pulse" />
+            </div>
+
+            {/* Title brand typography */}
+            <div className="space-y-1.5 text-center">
+              <h1 className="font-display font-black text-2xl italic tracking-tighter uppercase text-white">
+                STRIDE<span className="text-[#CCFF00]">_IA</span>
+              </h1>
+              <p className="text-[7.5px] text-white/30 tracking-[0.25em] font-black uppercase">
+                {language === 'fr' ? "ENGINE DE PHYSIOLOGIE ANALYTIQUE" : "METABOLIC SIMULATION NETWORK"}
+              </p>
+            </div>
+
+            {/* Loader percentage counting display */}
+            <div className="w-full space-y-2.5 pt-2">
+              <div className="flex justify-between items-end text-[7.5px] font-black tracking-widest text-[#CCFF00]">
+                <span className="text-white/40 font-bold">
+                  {splashProgress < 25 ? (language === 'fr' ? 'CALIBRATION DU CARDIOVASCULAIRE...' : 'CALIBRATING CARDIOVASCULAR...') :
+                   splashProgress < 55 ? (language === 'fr' ? 'CONVERGENCE DES SEUILS...' : 'CONVERGING THRESHOLDS...') :
+                   splashProgress < 80 ? (language === 'fr' ? 'COMPILATION DE LA PHYSIOLOGIE...' : 'COMPILING PHYSIOLOGICAL MATRIX...') :
+                   splashProgress < 100 ? (language === 'fr' ? 'APPRENTISSAGE DES NEURONES...' : 'LOADING COACH BEHAVIORS...') :
+                   (language === 'fr' ? 'SYSTEME OPERATIONNEL' : 'SYSTEM FULLY OPERATIONAL')}
+                </span>
+                <span className="text-right tabular-nums text-[11px] italic">{splashProgress}%</span>
+              </div>
+
+              {/* Cyberpunk styled line loading bar */}
+              <div className="h-1 w-full bg-white/5 border border-white/5 overflow-hidden relative">
+                <div 
+                  className="h-full bg-[#CCFF00] shadow-[0_0_10px_rgba(204,255,0,0.8)] transition-all duration-75"
+                  style={{ width: `${splashProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="text-[7px] text-white/20 font-bold uppercase tracking-widest pt-1">
+              {language === 'fr' ? "PROJET ATTACHÉ : DIRECT TRAINING FEED" : "CONNECTED TO ATHLETIC INTELLIGENCE ENGINE"}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   // RENDER LANDING VIEW
   if (view === 'landing') {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col font-sans selection:bg-[#CCFF00] selection:text-black antialiased relative">
+        {renderSplashScreen()}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-white/[0.03] via-transparent to-transparent pointer-events-none" />
         
         <header className="h-20 max-w-7xl w-full mx-auto flex items-center justify-between px-6 sm:px-10 shrink-0 border-b border-white/5 relative z-10">
@@ -695,6 +801,7 @@ export default function App() {
   // RENDER APP VIEW
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col font-sans selection:bg-[#CCFF00] selection:text-black antialiased relative print:bg-white print:text-black">
+      {renderSplashScreen()}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-white/[0.02] via-transparent to-transparent pointer-events-none print:hidden" />
       
       {/* GUIDED ONBOARDING TOUR SPEAKER BUBBLE OVERLAY */}
@@ -895,6 +1002,16 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Mobile Menu Trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            id="btn-mobile-menu"
+            className="md:hidden w-9 h-9 border border-white/10 flex items-center justify-center bg-black/40 text-white/70 hover:text-white cursor-pointer rounded-none outline-none"
+            title={language === 'fr' ? 'Menu de navigation' : 'Navigation Menu'}
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
           {/* Workout Notification Reminders System Dropdown */}
           <div className="relative">
             <button
@@ -907,7 +1024,7 @@ export default function App() {
               }`}
               title={language === 'fr' ? 'Centre de notifications' : 'Reminders & Notifications'}
             >
-              <Bell className={`w-4 h-4 ${notifications.some(n => !n.read) ? 'animate-pulse text-[#CCFF00]' : ''}`} />
+              <Bell className={`w-4 h-4 ${isNotificationOpen ? 'text-black' : (notifications.some(n => !n.read) ? 'animate-pulse text-[#CCFF00]' : '')}`} />
               {notifications.some(n => !n.read) && (
                 <span className="absolute -top-1 -right-1 bg-red-600 border border-black text-white font-mono text-[8px] font-bold w-4 h-4 flex items-center justify-center">
                   {notifications.filter(n => !n.read).length}
@@ -917,10 +1034,10 @@ export default function App() {
 
             {/* Custom Interactive Floating Dropdown for Notifications & Reminders */}
             {isNotificationOpen && (
-              <div className="absolute right-0 mt-3 w-80 bg-[#0F0F0F] border-2 border-[#CCFF00] shadow-[0_10px_40px_rgba(0,0,0,0.85)] z-50 p-4 font-mono text-[10px] uppercase text-white animate-fade-in pointer-events-auto">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
-                  <span className="font-white text-[10px] font-black text-[#CCFF00] tracking-wide flex items-center gap-1.5">
-                    <Bell className="w-3.5 h-3.5" />
+              <div className="fixed md:absolute top-24 md:top-auto right-4 left-4 md:right-0 md:left-auto mt-2 w-auto md:w-72 bg-[#0F0F0F] border-2 border-[#CCFF00] shadow-[0_10px_40px_rgba(0,0,0,0.85)] z-50 p-2.5 sm:p-3 font-mono text-[9px] uppercase text-white animate-fade-in pointer-events-auto">
+                <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-2.5">
+                  <span className="font-white text-[9px] font-black text-[#CCFF00] tracking-wide flex items-center gap-1.5">
+                    <Bell className="w-3 h-3" />
                     {language === 'fr' ? 'NOTIFICATIONS & RAPPELS' : 'NOTIFICATIONS LOG'}
                   </span>
                   <button 
@@ -928,16 +1045,16 @@ export default function App() {
                       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
                       setSimulatedNotifications(prev => prev.map(n => ({ ...n, read: true })));
                     }}
-                    className="text-[8px] text-white/40 hover:text-white transition-colors cursor-pointer font-bold"
+                    className="text-[7px] text-white/40 hover:text-white transition-colors cursor-pointer font-bold"
                   >
                     {language === 'fr' ? '[Tout lire]' : '[Read all]'}
                   </button>
                 </div>
 
                 {/* Reminders System Config Controls */}
-                <div className="bg-black/60 p-2.5 border border-white/5 space-y-2 mb-3">
+                <div className="bg-black/60 p-2 border border-white/5 space-y-1.5 mb-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-white/50 text-[9px] font-bold">
+                    <span className="text-white/50 text-[8px] font-bold">
                       {language === 'fr' ? "RAPPELS ACTIFS" : "DAILY NOTIFICATIONS"}
                     </span>
                     <input 
@@ -954,14 +1071,14 @@ export default function App() {
                           val ? 'success' : 'info'
                         );
                       }}
-                      className="accent-[#CCFF00] h-3.5 w-3.5 cursor-pointer"
+                      className="accent-[#CCFF00] h-3 w-3 cursor-pointer"
                     />
                   </div>
                   
                   {remindersEnabled && (
                     <div className="space-y-1 pt-1 border-t border-white/5">
                       <div className="flex items-center justify-between">
-                        <span className="text-white/40 text-[8px] font-bold">{language === 'fr' ? "HEURE PLANIFIÉE :" : "SCHEDULE TIME:"}</span>
+                        <span className="text-white/40 text-[7px] font-bold">{language === 'fr' ? "HEURE PLANIFIÉE :" : "SCHEDULE TIME:"}</span>
                         <input 
                           type="time"
                           value={reminderTime}
@@ -976,7 +1093,7 @@ export default function App() {
                               'success'
                             );
                           }}
-                          className="bg-[#1A1A1A] text-white text-[9px] font-bold border border-white/10 px-1 py-0.5 focus:outline-none focus:border-[#CCFF00] rounded-none cursor-pointer"
+                          className="bg-[#1A1A1A] text-white text-[8px] font-bold border border-white/10 px-1 py-0.5 focus:outline-none focus:border-[#CCFF00] rounded-none cursor-pointer"
                         />
                       </div>
                     </div>
@@ -984,9 +1101,9 @@ export default function App() {
                 </div>
 
                 {/* Notifications list queue */}
-                <div className="max-h-52 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
                   {notifications.length === 0 ? (
-                    <div className="text-center py-6 text-white/40 text-[9px] font-bold">
+                    <div className="text-center py-4 text-white/40 text-[8px] font-bold">
                       {language === 'fr' ? "Aucune notification" : "No passive notifications"}
                     </div>
                   ) : (
@@ -997,7 +1114,7 @@ export default function App() {
                           setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
                           setSimulatedNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
                         }}
-                        className={`p-2 pr-6 border transition-colors cursor-pointer text-[9px] relative group ${
+                        className={`p-1.5 pr-5 border transition-colors cursor-pointer text-[8px] relative group ${
                           n.read 
                             ? 'bg-black/20 border-white/5 text-white/40' 
                             : 'bg-white/[0.03] border-white/10 text-white hover:border-[#CCFF00]/40'
@@ -1009,45 +1126,45 @@ export default function App() {
                             setDismissedNotificationIds(prev => [...prev, n.id]);
                             addToast(language === 'fr' ? 'Notification vidée.' : 'Notification cleared.', 'info');
                           }}
-                          className="absolute right-1.5 top-1.5 text-white/20 hover:text-rose-500 p-0.5 transition-colors cursor-pointer"
+                          className="absolute right-1 top-1 text-white/20 hover:text-rose-500 p-0.5 transition-colors cursor-pointer"
                           title={language === 'fr' ? 'Supprimer' : 'Clear'}
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-2.5 h-2.5" />
                         </button>
                         {!n.read && (
-                          <span className="absolute top-1.5 right-6 w-1.5 h-1.5 rounded-full bg-[#CCFF00]" />
+                          <span className="absolute top-1 right-5 w-1 h-1 rounded-full bg-[#CCFF00]" />
                         )}
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`font-black uppercase text-[8px] tracking-wider ${
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className={`font-black uppercase text-[7px] tracking-wider ${
                             n.type === 'warning' ? 'text-rose-400' :
                             n.type === 'success' ? 'text-emerald-400' :
                             n.type === 'reminder' ? 'text-[#CCFF00]' : 'text-sky-400'
                           }`}>
                             {n.title}
                           </span>
-                          <span className="text-[7px] text-white/30 font-bold">{n.timestamp}</span>
+                          <span className="text-[6px] text-white/30 font-bold">{n.timestamp}</span>
                         </div>
-                        <p className="leading-normal font-medium whitespace-pre-wrap">{n.description}</p>
+                        <p className="leading-normal font-medium whitespace-pre-wrap text-[8px]">{n.description}</p>
                       </div>
                     ))
                   )}
                 </div>
 
                 {/* Trigger test alert CTA */}
-                <div className="border-t border-white/10 pt-3 mt-3 flex gap-2">
+                <div className="border-t border-white/10 pt-2 mt-2 flex gap-1.5">
                   <button 
                     onClick={() => {
                       setSimulatedNotifications([]);
                       setDismissedNotificationIds(prev => [...prev, ...notifications.map(n => n.id)]);
                       addToast(language === 'fr' ? 'Notifications vidées.' : 'Notifications cleared.', 'info');
                     }}
-                    className="flex-1 border border-white/10 py-1.5 text-center text-[8px] font-bold tracking-widest text-white/50 hover:text-white transition-all cursor-pointer bg-white/5"
+                    className="flex-1 border border-white/10 py-1 text-center text-[7px] font-bold tracking-widest text-white/50 hover:text-white transition-all cursor-pointer bg-white/5"
                   >
                     {language === 'fr' ? 'TOUT VIDER' : 'CLEAR ALL'}
                   </button>
                   <button 
                     onClick={triggerWorkoutReminderToast}
-                    className="flex-1 bg-[#CCFF00] text-black py-1.5 text-center text-[8px] font-black tracking-widest hover:bg-white transition-all cursor-pointer"
+                    className="flex-1 bg-[#CCFF00] text-black py-1 text-center text-[7px] font-black tracking-widest hover:bg-white transition-all cursor-pointer"
                   >
                     {language === 'fr' ? 'TESTER NOTIF' : 'TEST REMINDER'}
                   </button>
@@ -1084,9 +1201,237 @@ export default function App() {
         <HelpCircle className="w-5 h-5" />
       </button>
 
+      {/* MOBILE PREMIUM NAVIGATION SIDEBAR DRAWER */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden print:hidden" id="mobile-sidebar-drawer">
+            {/* Backdrop screen filter */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.85 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black backdrop-blur-md"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            
+            {/* Sliding sidebar container with horizontal drag gesture */}
+            <motion.div 
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              drag="x"
+              dragDirectionLock
+              dragConstraints={{ left: -320, right: 0 }}
+              dragElastic={{ left: 0.05, right: 0.15 }}
+              onDragEnd={(event, info) => {
+                if (info.offset.x < -80 || info.velocity.x < -300) {
+                  setMobileMenuOpen(false);
+                }
+              }}
+              className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0A0A0A] border-r border-white/11 p-6 flex flex-col justify-between shadow-[5px_0_50px_rgba(0,0,0,0.95)] font-mono uppercase z-55 touch-pan-y selection:bg-[#CCFF00] selection:text-black cursor-grab active:cursor-grabbing"
+            >
+              <div className="space-y-8">
+                {/* Top brand & close panel */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 bg-[#CCFF00] rotate-45 animate-pulse" />
+                    <span className="font-display font-black text-lg italic tracking-tighter text-white">
+                      STRIDE<span className="text-[#CCFF00]">_IA</span>
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-8 h-8 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white transition-all cursor-pointer rounded-none outline-none"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Navigation target routes */}
+                <div className="space-y-3">
+                  <div className="text-[9px] text-white/30 font-black tracking-widest mb-4">
+                    {language === 'fr' ? "OPTIONS DE L'ATHLÈTE" : "ATHLETE PANEL"}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('profile');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 border transition-all text-left font-black text-[10px] tracking-widest cursor-pointer ${
+                      activeTab === 'profile'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-[0_0_15px_rgba(204,255,0,0.2)]'
+                        : 'bg-[#121212] border-white/5 text-white/60 hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>{language === 'fr' ? "PROFIL & OBJECTIFS" : "ATHLETE PROFILE"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('plan');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 border transition-all text-left font-black text-[10px] tracking-widest cursor-pointer ${
+                      activeTab === 'plan'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-[0_0_15px_rgba(204,255,0,0.2)]'
+                        : 'bg-[#121212] border-white/5 text-white/60 hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span>{language === 'fr' ? "MON PLAN HEBDO" : "TRAINING SCHEDULE"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('chat');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 border transition-all text-left font-black text-[10px] tracking-widest cursor-pointer ${
+                      activeTab === 'chat'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-[0_0_15px_rgba(204,255,0,0.2)]'
+                        : 'bg-[#121212] border-white/5 text-white/60 hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>{language === 'fr' ? "CONVERSATION COACH" : "COACH DISCUSSIONS"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('physiology');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 border transition-all text-left font-black text-[10px] tracking-widest cursor-pointer ${
+                      activeTab === 'physiology'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-[0_0_15px_rgba(204,255,0,0.2)]'
+                        : 'bg-[#121212] border-white/5 text-white/60 hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    <Activity className="w-4 h-4" />
+                    <span>{language === 'fr' ? "NUTRITION & PHYSIO" : "METABOLIC METRICS"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('pace');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 border transition-all text-left font-black text-[10px] tracking-widest cursor-pointer ${
+                      activeTab === 'pace'
+                        ? 'bg-[#CCFF00] text-black border-[#CCFF00] shadow-[0_0_15px_rgba(204,255,0,0.2)]'
+                        : 'bg-[#121212] border-white/5 text-white/60 hover:text-white hover:border-white/20'
+                    }`}
+                  >
+                    <Calculator className="w-4 h-4" />
+                    <span>{language === 'fr' ? "CALCULATEUR D'ALLURE" : "PACE CALCULATOR"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom info controls & Swipe Help indicator */}
+              <div className="border-t border-white/10 pt-4 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[8px] text-white/30 font-black tracking-widest">
+                    {language === 'fr' ? "LANGUE ACTIVE" : "SYSTEM LANG"}
+                  </span>
+                  <div className="flex gap-1 border border-white/10 p-0.5">
+                    <button
+                      onClick={() => handleLanguageChange('fr')}
+                      className={`px-2 py-0.5 text-[8px] font-black cursor-pointer ${language === 'fr' ? 'bg-[#CCFF00] text-black' : 'text-white/40'}`}
+                    >
+                      FR
+                    </button>
+                    <button
+                      onClick={() => handleLanguageChange('en')}
+                      className={`px-2 py-0.5 text-[8px] font-black cursor-pointer ${language === 'en' ? 'bg-[#CCFF00] text-black' : 'text-white/40'}`}
+                    >
+                      EN
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 p-3 text-[9px] space-y-1">
+                  <div className="flex justify-between font-black">
+                    <span className="text-white/40">{language === 'fr' ? "ATHLÈTE :" : "ATHLETE :"}</span>
+                    <span className="text-[#CCFF00]">{profile.level}</span>
+                  </div>
+                  <div className="flex justify-between text-white/40 font-bold">
+                    <span>{language === 'fr' ? "ENTRAÎNEUR :" : "COACH :"}</span>
+                    <span className="text-white">{activeCoach.name}</span>
+                  </div>
+                </div>
+
+                {/* Micro drag helper hint */}
+                <div className="text-center text-[7.5px] text-white/25 border border-dashed border-white/10 py-1.5 font-bold tracking-wider rounded-none select-none">
+                  {language === 'fr' ? "← BALAYER POUR FERMER" : "← SWIPE LEFT TO CLOSE"}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-10 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-10 items-start print:hidden">
-        <section id="athlete-profile-section" className="md:col-span-4 md:sticky md:top-24 space-y-8 md:max-h-[calc(100vh-120px)] md:overflow-y-auto pr-1 select-none scrollbar-thin">
-          <div className="bg-[#0F0F0F] border border-white/10 p-6 shadow-2xl relative overflow-hidden">
+        {/* FAST-ACCESS MOBILE TAP BAR row */}
+        <div className="md:hidden col-span-1 bg-[#0F0F0F] border border-white/10 p-1 flex overflow-x-auto whitespace-nowrap scrollbar-none gap-1 font-mono uppercase tracking-[0.05em] text-[8px] font-black w-full mb-1">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`flex-1 min-w-[65px] py-2.5 px-1.5 text-center border cursor-pointer transition-all ${
+              activeTab === 'profile'
+                ? 'bg-[#CCFF00] text-black border-[#CCFF00] font-black shadow-sm'
+                : 'bg-transparent text-white/40 border-transparent hover:text-white'
+            }`}
+          >
+            {language === 'fr' ? 'PROFIL' : 'PROFILE'}
+          </button>
+          <button
+            onClick={() => setActiveTab('plan')}
+            className={`flex-1 min-w-[65px] py-2.5 px-1.5 text-center border cursor-pointer transition-all ${
+              activeTab === 'plan'
+                ? 'bg-[#CCFF00] text-black border-[#CCFF00] font-black shadow-sm'
+                : 'bg-transparent text-white/40 border-transparent hover:text-white'
+            }`}
+          >
+            {language === 'fr' ? 'PLAN' : 'SCHEDULE'}
+          </button>
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex-1 min-w-[65px] py-2.5 px-1.5 text-center border cursor-pointer transition-all ${
+              activeTab === 'chat'
+                ? 'bg-[#CCFF00] text-black border-[#CCFF00] font-black shadow-sm'
+                : 'bg-transparent text-white/40 border-transparent hover:text-white'
+            }`}
+          >
+            {language === 'fr' ? 'COACH' : 'COACH'}
+          </button>
+          <button
+            onClick={() => setActiveTab('physiology')}
+            className={`flex-1 min-w-[65px] py-2.5 px-1.5 text-center border cursor-pointer transition-all ${
+              activeTab === 'physiology'
+                ? 'bg-[#CCFF00] text-black border-[#CCFF00] font-black shadow-sm'
+                : 'bg-transparent text-white/40 border-transparent hover:text-white'
+            }`}
+          >
+            {language === 'fr' ? 'PHYSIO' : 'PHYSIO'}
+          </button>
+          <button
+            onClick={() => setActiveTab('pace')}
+            className={`flex-1 min-w-[65px] py-2.5 px-1.5 text-center border cursor-pointer transition-all ${
+              activeTab === 'pace'
+                ? 'bg-[#CCFF00] text-black border-[#CCFF00] font-black shadow-sm'
+                : 'bg-transparent text-white/40 border-transparent hover:text-white'
+            }`}
+          >
+            {language === 'fr' ? 'ALLURE' : 'PACE'}
+          </button>
+        </div>
+
+        <section id="athlete-profile-section" className={`${(activeTab === 'profile' || activeTab === 'pace') ? 'block' : 'hidden'} md:block md:col-span-4 md:sticky md:top-24 space-y-8 md:max-h-[calc(100vh-120px)] md:overflow-y-auto pr-1 select-none scrollbar-thin`}>
+          <div className={`${activeTab === 'profile' ? 'block' : 'hidden md:block'} bg-[#0F0F0F] border border-white/10 p-6 shadow-2xl relative overflow-hidden`}>
             <div className="absolute top-0 right-0 w-2 h-16 bg-[#CCFF00]" />
             <div className="absolute top-0 right-0 w-16 h-2 bg-[#CCFF00]" />
             
@@ -1334,19 +1679,23 @@ export default function App() {
             </div>
           </div>
 
-          <RunningPaceCalc language={language} />
+          <div className={activeTab === 'pace' ? 'block' : 'hidden md:block'}>
+            <RunningPaceCalc language={language} />
+          </div>
 
-          <IntelligentSidebar 
-            profile={profile}
-            activeCoach={activeCoach}
-            language={language}
-            completedCount={completedPlanSessions}
-            totalCount={totalPlanSessions}
-          />
+          <div className={activeTab === 'profile' ? 'block' : 'hidden md:block'}>
+            <IntelligentSidebar 
+              profile={profile}
+              activeCoach={activeCoach}
+              language={language}
+              completedCount={completedPlanSessions}
+              totalCount={totalPlanSessions}
+            />
+          </div>
         </section>
 
-        <section className="md:col-span-8 space-y-8">
-          <div className="bg-[#0F0F0F] border border-white/10 p-1 flex">
+        <section className={`${(activeTab === 'plan' || activeTab === 'chat' || activeTab === 'physiology') ? 'block' : 'hidden'} md:block md:col-span-8 space-y-8`}>
+          <div className="hidden md:flex bg-[#0F0F0F] border border-white/10 p-1">
             <button
               id="tab-view-plan"
               onClick={() => setActiveTab('plan')}
@@ -1483,6 +1832,8 @@ export default function App() {
               <PhysiologyDashboard 
                 language={language}
                 athleteAge={profile.age}
+                plan={plan}
+                completedSessions={completedSessions}
               />
             )}
           </div>

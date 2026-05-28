@@ -3,11 +3,106 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import { TrainingPlan, WorkoutSession, SessionType } from '../types';
-import { CheckCircle2, Zap, Target, Moon, Award, Info, Flame, Eye, Dumbbell, Printer, List, X, Copy, Calendar as CalendarIcon } from 'lucide-react';
+import { CheckCircle2, Zap, Target, Moon, Award, Info, Flame, Eye, Dumbbell, Printer, List, X, Copy, Calendar as CalendarIcon, Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import { i18n, Language } from '../i18n';
+
+interface StopwatchTimerProps {
+  key?: string;
+  sessionId: string;
+  durationMinutes: number;
+  language: Language;
+}
+
+export function StopwatchTimer({ sessionId, durationMinutes, language }: StopwatchTimerProps) {
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
+  const formatTime = (totalSecs: number) => {
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    
+    const pads = (val: number) => String(val).padStart(2, '0');
+    if (hrs > 0) {
+      return `${pads(hrs)}:${pads(mins)}:${pads(secs)}`;
+    }
+    return `${pads(mins)}:${pads(secs)}`;
+  };
+
+  const targetSeconds = durationMinutes * 60;
+  const progressPercent = Math.min((seconds / targetSeconds) * 100, 100);
+  const isTargetAchieved = seconds >= targetSeconds;
+
+  return (
+    <div className="border border-white/10 bg-black/50 p-4 font-mono uppercase space-y-3.5 relative overflow-hidden">
+      {/* Dynamic fluorescent progress glow border */}
+      <div className="absolute top-0 left-0 h-0.5 bg-[#CCFF00] transition-all duration-300" style={{ width: `${progressPercent}%` }} />
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Timer className={`w-4 h-4 text-[#CCFF00] ${isRunning ? 'animate-pulse' : ''}`} />
+          <span className="text-[9px] uppercase font-black text-white/60 tracking-wider">
+            {language === 'fr' ? 'Chronomètre en Direct' : 'Live Session Stopwatch'}
+          </span>
+        </div>
+        {isTargetAchieved && (
+          <span className="text-[8px] bg-[#CCFF00]/10 text-[#CCFF00] border border-[#CCFF00]/40 px-2 py-0.5 rounded-none font-black tracking-widest animate-pulse">
+            {language === 'fr' ? 'OBJECTIF ATTEINT ✓' : 'TARGET COMPLETED ✓'}
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="space-y-1 text-center sm:text-left">
+          <div className="text-3xl font-black font-mono tracking-tighter text-white">
+            {formatTime(seconds)} <span className="text-sm text-white/30 font-bold">/ {formatTime(targetSeconds)}</span>
+          </div>
+          <div className="text-[8px] tracking-wider text-white/40 font-bold">
+            {language === 'fr' ? `VOTRE COURSE EN DU DIRECT (INTENSITÉ CIBLE : ${durationMinutes} MIN)` : `YOUR ACTIVE TRAINING (PHYSICAL TARGET: ${durationMinutes} MIN)`}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsRunning(!isRunning)}
+            className={`w-10 h-10 border flex items-center justify-center transition-all cursor-pointer rounded-none outline-none ${
+              isRunning
+                ? 'bg-amber-500 border-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-[#CCFF00] border-[#CCFF00] text-black shadow-[0_0_15px_rgba(204,255,0,0.25)] hover:bg-white hover:border-white'
+            }`}
+          >
+            {isRunning ? <Pause className="w-4 h-4 text-black" /> : <Play className="w-4 h-4 fill-current text-black" />}
+          </button>
+
+          <button
+            onClick={() => {
+              setIsRunning(false);
+              setSeconds(0);
+            }}
+            className="w-10 h-10 bg-black/40 border border-white/10 hover:border-white text-white flex items-center justify-center transition-all cursor-pointer rounded-none outline-none"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Static assets generated for route visualization
 // @ts-ignore
@@ -992,6 +1087,16 @@ export default function TrainingPlanDisplay({
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Live Workout Stopwatch Timer Section */}
+              {selectedSession.type !== 'repos' && (
+                <StopwatchTimer
+                  key={selectedSession.id}
+                  sessionId={selectedSession.id}
+                  durationMinutes={selectedSession.durationMinutes}
+                  language={language}
+                />
               )}
 
               {/* Session completion actions */}
