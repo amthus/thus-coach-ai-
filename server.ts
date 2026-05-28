@@ -11,7 +11,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 const PORT = 3000;
 
 app.use(express.json());
@@ -458,6 +458,10 @@ Calcule et propose une suggestion d'ajustement précise en français pour les s�
 
 // 4. Connect Vite Frontend middleware or serve production assets
 async function startServer() {
+  if (process.env.VERCEL) {
+    console.log("Running in Vercel serverless function environment. Local port listener bypassed.");
+    return;
+  }
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -481,3 +485,5 @@ async function startServer() {
 }
 
 startServer();
+
+export default app;
