@@ -1,111 +1,87 @@
-# Stride_AI: System Architecture for Adaptive Running Progression
+<p align="center"><img src="public/logo.svg" alt="ThusStride" height="56" /></p>
 
-Stride_AI is an enterprise-grade full-stack artificial intelligence application designed to assist running athletes in achieving structured, physiological cardiorespiratory optimization without the risk of physical injury. Engineered with a robust Express server-side security layer and a highly responsive React client interface, Stride_AI delivers customized four-week athletic training blueprints with real-time feedback mechanisms, metabolic calculations, and dynamic training plan recalibration.
+# ThusStride
 
-## Project Relevance and Key Features
+**Coach de course à pied intelligent** : plan d'entraînement personnalisé, zones cardiaques (Karvonen), journal d'entraînement, ajustement de la charge selon la fatigue et coach IA — dans un espace personnel sécurisé.
 
-Stride_AI integrates modern advances in sports science, web security, and server-side generative artificial intelligence.
+## Fonctionnalités
 
-1. **Calculated Cardio Zones**: Integration of a physiological calculator based on the Karvonen formula. Rather than utilizing basic age-based maximum heart rate approximations, Stride_AI integrates heart rate reserve to define exact cardiovascular zones.
-2. **Post-Run Load Calibration**: Athletes can log subjective physical fatigue on a scale of 1 to 10 after completed workouts. This trigger triggers real-time load calibration advise through server-side intelligence.
-3. **Multi-Coach Scientific Persona Selection**: System interface allows users to alternate between specific coach profiles. Each persona delivers customized tactical feedback tailored to different physical training philosophies.
-4. **Secure Hybrid Architecture**: All integration hooks with LLM APIs are kept inside isolated node processes on the server. No security tokens or proprietary prompt sequences are exposed to the client side browser.
+| Espace | Pages |
+| --- | --- |
+| Public | Accueil, Fonctionnalités, À propos, FAQ, Connexion, Inscription, Mot de passe oublié / réinitialisation, Confidentialité, CGU, Mentions légales, Cookies, 404 |
+| Athlète (`/app`) | Onboarding, Tableau de bord, Mon plan (calendrier, historique, export, impression), Coach IA, Journal (CSV), Physiologie & nutrition, Outils (allure, prédiction Riegel, chronomètre), Profil athlète, Paramètres (rappels, mot de passe, export RGPD, suppression du compte) |
+| Administration (`/admin`) | Indicateurs plateforme, état des services, gestion des rôles (sans accès aux données de santé) |
 
----
+- **Plans** : générés par Google Gemini ou IBM Granite (sortie validée par schéma), sinon par un **moteur de règles scientifiques** déterministe (progression ≤ 10 %/semaine, semaine d'assimilation, aucune séance intense en cas de douleur). La source réelle est toujours affichée.
+- **Physiologie** : FC max (Tanaka ou mesurée), zones Karvonen, VO2max (Uth–Sørensen) uniquement si la FC de repos est mesurée.
+- **Suivi** : validation des séances, fatigue (RPE 1–10), durée/distance/FC réelles, recommandation de charge, statistiques sur 8 semaines, série en cours.
+- **Rappels** : notification quotidienne à l'heure choisie (navigateur).
 
-## 1. The Global Problem Statement
+## Architecture
 
-According to clinical studies in sports medicine, over seventy percent of all amateur running athletes experience a training-related injury within their first twelve months of activity. The direct cause is two-fold:
-
-* **Cardiovascular Mismanagement**: Amateur runners frequently conduct simple footings at excess heart rates, running in high-intensity anaerobic clusters when they should be developing their aerobic base in low-intensity zones (60 to 70 percent of heart rate reserve). This causes cumulative chronic fatigue and metabolic stalling.
-* **Lack of Dynamic Volume Progression**: Static training sheets fail when real-world interruptions occur. If an athlete experiences localized muscle pain, shin splints, or systemic fatigue, a static schedule forces them to proceed linearly, triggering mechanical failures like patellofemoral pain syndrome or Achilles tendinitis.
-* **Access Disparity**: Professional physical coaching, sports physiology exams, and precise metabolic thresholds remain financially out of reach for a major portion of the running community.
-
----
-
-## 2. The Stride_AI Solution
-
-Stride_AI addresses these core friction points by acting as a real-time, personalized virtual exercise physiologist:
-
-* **Subjective Fatigue Feedback Loops**: By monitoring the physical fatigue experienced during sessions, the system suggests immediate changes in upcoming running volumes to maximize muscle tissue recovery and prevent joint injury.
-* **Karvonen Zone Synchronization**: By collecting age and resting heart rate metrics, the application establishes the reserve heart rate range, guiding the user to structure intervals exactly at specified paces.
-* **Context-Aware Safety Rails**: If an athlete records specific physical symptoms or injury histories (such as ankle or knee instabilities), the app's prompt architecture guides the system to inject non-impact instructions into the workout calendar.
-
----
-
-## 3. Server-Side Artificial Intelligence Engineering
-
-To secure high-performing and deterministic results, the application runs a multi-provider backend setup using primary and secondary models.
-
-### Google Gemini 3.5 Flash Integration
-The main server processes generate custom plans using the new @google/genai SDK, leveraging Gemini 3.5 Flash. Generative tasks use strict JSON schema constraints. This guarantees that fields such as `weeks`, `sessions`, `intensityPercent`, and physical parameters conform exactly to the model definitions needed by the frontend interfaces, eliminating syntax parse errors.
-
-### IBM Watsonx Granite Redundancy
-A secondary translation middleware is built to support IBM Watsonx Granite models (using `ibm/granite-13b-instruct-v2`). In cases of API rate limit breaches or regional latency spikes, the application's runtime automatically proxies requests through Watsonx endpoints, ensuring high-availability during competition showcases.
-
-### Isolation of Secret Variables
-API credentials, backend port bindings, and Watsonx project parameters are declared within isolated environmental parameters. This keeps the application isolated from client-side reverse-engineering attempts.
-
----
-
-## 4. Technical Architecture and Stack
-
-The system is constructed with a fast, modern, and type-safe stack:
-
-* **Frontend Engine**: Single Page Application built on React 19, powered by Vite for fast bundle delivery and hot compilation. Styled using custom Tailwind CSS utility systems for performance.
-* **Backend Server**: Node.js core utilizing Express for low-latency REST endpoint routing. Integrates standard JSON body interpreters and manual request validations.
-* **Component Framework**: Lucide vector assets for high-resolution rendering, and customized chart logic tracking long-term weekly stress scores.
-* **Global Port Alignment**: Dev and production containers run on port 3000 behind high-performance ingress proxies to map global domain paths.
-
----
-
-## 5. Security and Compliance Controls
-
-Stride_AI prioritizes data minimization and identity security.
-
-* **Local Storage Sandbox**: Personal health metrics, training history, and dynamic configuration states are persisted in the sandboxed browser environment of the user. Because this data is not compiled on unauthorized public SQL databases, athlete health privacy is fully preserved.
-* **No Client Keys Leak**: No calls to third-party endpoints are executed directly inside the user's browser. Safe proxy routes on the backend enforce the principle of least privilege, blocking data sniffing via browser inspection tools.
-
----
-
-## 6. Local Setup and Deployment Guide
-
-### Configuration Parameters
-Create a .env file based on the provided template in the application root directory:
-
-```env
-GEMINI_API_KEY=your_google_gemini_api_key
-IBM_WATSONX_API_KEY=your_ibm_watsonx_api_key
-IBM_WATSONX_PROJECT_ID=your_ibm_watsonx_project_id
+```
+server.ts            Point d'entrée Node (dev : Vite en middleware, prod : fichiers statiques)
+api/index.ts         Point d'entrée serverless Vercel
+server/
+  app.ts             Express : helmet/CSP, compression, rate limiting, CSRF, routes, SEO
+  config.ts          Variables d'environnement validées (zod)
+  db/                Kysely – PostgreSQL (prod) ou SQLite intégré à Node (dev/tests), migrations
+  middleware/auth.ts Sessions (cookie HttpOnly, jeton haché en base), rôles, CSRF
+  routes/            auth, account (profil, paramètres, export, suppression), training, chat, admin
+  services/          ai (Gemini / watsonx), planEngine (règles), mailer (SMTP)
+  seo.ts             Métadonnées par route injectées dans le HTML, robots.txt, sitemap.xml
+shared/              Schémas zod, types, physiologie, coachs, SEO — partagés client/serveur
+src/
+  app/               Routeur (pages chargées à la demande) et gardes d'accès
+  layouts/           Public, espace connecté
+  pages/             public, auth, legal, app, admin
+  components/        UI (primitives, toasts, logo), plan, physiologie, formulaires
+  lib/               Client API, React Query, i18n FR/EN, SEO, notifications
+tests/               Vitest + supertest (API, sécurité, isolation des données, domaine)
 ```
 
-### Script Execution Commands
+## Démarrage
 
-To execute the project locally inside a development container, run the following commands:
+Prérequis : **Node.js ≥ 22.5**.
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
 
-2. **Launch Express Dev Server**:
-   ```bash
-   npm run dev
-   ```
-   This boots the backend engine on port 3000. Under development mode, the server mounts Vite as a runtime middleware, serving hot typescript assets safely on the same address.
+L'application tourne sur http://localhost:3000. Sans `DATABASE_URL`, une base SQLite locale est créée dans `.data/`. Sans clé d'IA, les plans et conseils viennent du moteur de règles et le chat coach indique qu'il est indisponible.
 
-3. **Production Compilation**:
-   ```bash
-   npm run build
-   ```
-   This commands bundles the React assets under a static directory and transpiles the backend server into a single optimized file.
+| Commande | Rôle |
+| --- | --- |
+| `npm run dev` | Serveur de développement (HMR) |
+| `npm run lint` | Vérification TypeScript stricte |
+| `npm test` | Tests (API, sécurité, domaine) |
+| `npm run build` | Build client (`dist/`) et serveur (`dist-server/`) |
+| `npm start` | Lancement en production |
+| `npm run assets` | Régénère icônes, image Open Graph et images optimisées |
 
-4. **Production Start**:
-   ```bash
-   npm run start
-   ```
-   Executes the optimized build on your container deployment.
+## Production
 
----
+1. Créez une base **PostgreSQL** (Neon, Supabase, RDS…) et renseignez `DATABASE_URL` (`DATABASE_SSL=true` si requis). Les migrations s'appliquent au démarrage.
+2. Renseignez `APP_URL` (domaine public, utilisé pour les URL canoniques, le sitemap et les e-mails), `ADMIN_EMAILS`, `SMTP_URL`, et au moins une clé d'IA (`GEMINI_API_KEY` et/ou `IBM_WATSONX_*`).
+3. Renseignez `VITE_CONTACT_EMAIL` et `VITE_LEGAL_PUBLISHER` (mentions légales) **avant le build**.
+4. Déployez : Vercel (`vercel.json` fourni) ou tout hébergeur Node (`npm run build && npm start`).
 
-Stride_AI represents a serious, scientific, and enterprise-grade approach to democratizing sports health, combining secure hybrid architectures with deterministic AI response schemas.
+## Sécurité et conformité
+
+- Mots de passe hachés avec **scrypt** (paramètres OWASP), comparaison en temps constant, pas d'énumération de comptes.
+- Session par cookie `HttpOnly`, `Secure`, `SameSite=Lax` ; jeton stocké haché ; révocation à la réinitialisation / au changement de mot de passe.
+- Protection CSRF (JSON obligatoire + vérification de l'origine), limitation de débit (authentification, IA, API).
+- En-têtes : CSP stricte, HSTS, `frame-ancestors 'none'`, `Permissions-Policy`, `nosniff`.
+- Toutes les entrées validées par zod ; cloisonnement strict des données par compte (testé).
+- **RGPD** : consentement explicite aux données de santé, export JSON, suppression définitive, politique de confidentialité, un seul cookie strictement nécessaire, polices auto-hébergées (aucune requête tierce).
+- Entrées utilisateur nettoyées avant insertion dans les prompts IA.
+
+## SEO
+
+Métadonnées par page injectées côté serveur (titre, description, canonical, Open Graph, Twitter, robots), `sitemap.xml` et `robots.txt` dynamiques, données structurées JSON-LD (Organization, WebSite, SoftwareApplication, FAQPage), manifeste PWA, icônes et image de partage 1200×630, vraies réponses 404, pages privées en `noindex`.
+
+## Licence
+
+Apache-2.0 — conçu par ThusDev (Malthus Ametepe).

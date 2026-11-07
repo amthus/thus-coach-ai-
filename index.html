@@ -1,14 +1,55 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Coach de Course IA - Assistant Entraînement Élites</title>
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!--seo:start-->
+    <title>ThusStride – Coach de course à pied IA et plan d'entraînement personnalisé</title>
+    <meta name="description" content="ThusStride crée votre plan d'entraînement de course à pied personnalisé, calcule vos zones cardiaques (méthode de Karvonen), suit vos séances et ajuste la charge selon votre fatigue grâce à un coach IA." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <!--seo:end-->
+    <meta name="application-name" content="ThusStride" />
+    <meta name="author" content="Malthus Ametepe – ThusDev" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-title" content="ThusStride" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "__APP_URL__/#organization",
+            "name": "ThusStride",
+            "url": "__APP_URL__/",
+            "logo": "__APP_URL__/icons/icon-512.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "__APP_URL__/#website",
+            "name": "ThusStride",
+            "url": "__APP_URL__/",
+            "inLanguage": "fr-FR",
+            "publisher": { "@id": "__APP_URL__/#organization" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <div style="padding:24px;font-family:system-ui,sans-serif;color:#fff;background:#0a0a0a">
+        ThusStride nécessite JavaScript pour fonctionner. Activez-le dans votre navigateur.
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

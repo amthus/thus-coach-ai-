@@ -7,27 +7,34 @@ import React, { useState, useEffect } from 'react';
 import { i18n, Language } from '../i18n';
 import { Heart, Activity, ShieldAlert, BarChart3, Apple, Scale, Droplet, Flame, Info } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
-import { TrainingPlan } from '../types';
+import type { TrainingPlan } from '../../shared/types';
+import { estimateMaxHr } from '../../shared/physiology';
 
 interface PhysiologyDashboardProps {
   language: Language;
   athleteAge: number;
   plan?: TrainingPlan | null;
   completedSessions?: Record<string, boolean>;
+  initialMaxHr?: number | null;
+  initialRestingHr?: number | null;
+  initialWeight?: number | null;
 }
 
 export default function PhysiologyDashboard({ 
   language, 
   athleteAge, 
   plan, 
-  completedSessions 
+  completedSessions,
+  initialMaxHr,
+  initialRestingHr,
+  initialWeight,
 }: PhysiologyDashboardProps) {
   const t = i18n[language];
 
-  const estimatedFcm = 220 - athleteAge;
-  const [fcm, setFcm] = useState(estimatedFcm);
-  const [fcr, setFcr] = useState(60);
-  const [weight, setWeight] = useState<number>(70);
+  const estimatedFcm = estimateMaxHr(athleteAge);
+  const [fcm, setFcm] = useState(initialMaxHr ?? estimatedFcm);
+  const [fcr, setFcr] = useState(initialRestingHr ?? 65);
+  const [weight, setWeight] = useState<number>(initialWeight ?? 70);
   const [activeWeekNum, setActiveWeekNum] = useState<number>(1);
   const [simulatedIntensity, setSimulatedIntensity] = useState<'light' | 'moderate' | 'intense'>('moderate');
 
@@ -102,7 +109,7 @@ export default function PhysiologyDashboard({
       fatsTitle: "Lipides (Soutien Hormonal)",
       kcalLabel: "Budget Calorique Quotidien Cible",
       hydrationAlert: "Hydratation Athlétique : Un minimum de 2,5 L à 3 L d'eau minérale est requis pour éliminer les toxines musculaires et optimiser l'enclenchement aérobie.",
-      noPlanLabel: "Simuler la charge d'entraînement pour calculer les macros :",
+      noPlanLabel: "Choisissez la charge d'entraînement pour calculer les macros :",
       weekSelectorLabel: "Sélectionner la semaine du protocole actif :",
       sourcesLabel: "Sources de qualité à privilégier :"
     },
@@ -117,15 +124,15 @@ export default function PhysiologyDashboard({
       fatsTitle: "Fats (Endocrine Support)",
       kcalLabel: "Target Daily Caloric Budget",
       hydrationAlert: "Athletic Hydration: A minimum of 2.5L to 3.0L of mineralized water is recommended on intensive training days to prevent cellular cramping.",
-      noPlanLabel: "Simulate training intensity load to calculate macros:",
-      weekSelectorLabel: "Select simulated training week:",
+      noPlanLabel: "Choose your training load to calculate macros:",
+      weekSelectorLabel: "Select the training week:",
       sourcesLabel: "High-quality suggested foods:"
     }
   }[language];
 
   useEffect(() => {
-    setFcm(220 - athleteAge);
-  }, [athleteAge]);
+    setFcm(initialMaxHr ?? estimateMaxHr(athleteAge));
+  }, [athleteAge, initialMaxHr]);
 
   const fcrReserve = Math.max(fcm - fcr, 0);
 

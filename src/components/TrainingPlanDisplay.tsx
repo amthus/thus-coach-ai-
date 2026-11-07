@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
-import { TrainingPlan, WorkoutSession, SessionType } from '../types';
-import { CheckCircle2, Zap, Target, Moon, Award, Info, Flame, Eye, Dumbbell, Printer, List, X, Copy, Calendar as CalendarIcon, Play, Pause, RotateCcw, Timer } from 'lucide-react';
+import type { TrainingPlan, WorkoutSession, SessionType } from '../../shared/types';
+import { CheckCircle2, Zap, Target, Moon, Award, Info, Flame, Eye, Dumbbell, Printer, List, X, Calendar as CalendarIcon, Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import { i18n, Language } from '../i18n';
 
 interface StopwatchTimerProps {
@@ -104,15 +104,11 @@ export function StopwatchTimer({ sessionId, durationMinutes, language }: Stopwat
   );
 }
 
-// Static assets generated for route visualization
-// @ts-ignore
-import routeMapIntervals from '../assets/images/route_map_intervals_1779839046409.png';
-// @ts-ignore
-import routeMapEndurance from '../assets/images/route_map_endurance_1779839062267.png';
-// @ts-ignore
-import routeMapThreshold from '../assets/images/route_map_threshold_1779839078159.png';
-// @ts-ignore
-import routeMapRecovery from '../assets/images/route_map_recovery_1779839092824.png';
+// Illustrative route images (not GPS data)
+import routeMapIntervals from '../assets/images/route_map_intervals.webp';
+import routeMapEndurance from '../assets/images/route_map_endurance.webp';
+import routeMapThreshold from '../assets/images/route_map_threshold.webp';
+import routeMapRecovery from '../assets/images/route_map_recovery.webp';
 
 interface Props {
   plan: TrainingPlan;
@@ -121,8 +117,9 @@ interface Props {
   language: Language;
   sessionFatigue?: Record<string, number>;
   fatigueRecommendations?: Record<string, string>;
-  athleteAge?: number;
-  athleteEmail?: string;
+  athleteName?: string;
+  maxHr?: number;
+  restingHr?: number;
 }
 
 const dayTranslations: Record<string, Record<Language, string>> = {
@@ -142,16 +139,15 @@ export default function TrainingPlanDisplay({
   language,
   sessionFatigue,
   fatigueRecommendations,
-  athleteAge,
-  athleteEmail
+  athleteName = '',
+  maxHr = 190,
+  restingHr = 65,
 }: Props) {
   const [selectedSession, setSelectedSession] = useState<WorkoutSession | null>(null);
   const [activeWeek, setActiveWeek] = useState<number>(1);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
-  const [showPrintModal, setShowPrintModal] = useState(false);
-  const [copiedStatus, setCopiedStatus] = useState(false);
   
   const t = i18n[language];
 
@@ -170,43 +166,7 @@ export default function TrainingPlanDisplay({
     }
   };
 
-  const getFullMarkdown = () => {
-    let md = `# STRIDE_AI ATHLETIC PLAN: ${plan.objectiveLabel}\n`;
-    md += `Athlete Level: ${plan.levelLabel}\n`;
-    md += `Athlete Email: ${athleteEmail || 'learninhack@gmail.com'}\n`;
-    md += `Generated on: ${new Date().toLocaleDateString()}\n\n`;
-    md += `Coach Advice: ${plan.coachTips}\n\n`;
-    
-    plan.weeks.forEach(w => {
-      md += `## Week ${w.weekNumber}: ${w.focus}\n\n`;
-      w.sessions.forEach(s => {
-        md += `### ${s.day} - ${s.title} (${s.type.toUpperCase()})\n`;
-        md += `- Duration: ${s.durationMinutes} mins\n`;
-        if (s.distanceKm) md += `- Distance Est: ${s.distanceKm} km\n`;
-        md += `- Heart Intensity: ${s.intensityPercent}% FCM\n`;
-        md += `- Prescription: ${s.description}\n`;
-        if (s.warmup) md += `- Warmup: ${s.warmup}\n`;
-        if (s.cooldown) md += `- Cooldown: ${s.cooldown}\n`;
-        md += `\n`;
-      });
-    });
-    return md;
-  };
-
-  const handlePrintTrigger = () => {
-    // Check if we are in an iframe sandbox or if print is blocked
-    const isInIframe = window.self !== window.top;
-    if (isInIframe) {
-      setShowPrintModal(true);
-    } else {
-      try {
-        window.print();
-      } catch (err) {
-        console.warn("Print action caught by sandbox constraint:", err);
-        setShowPrintModal(true);
-      }
-    }
-  };
+  const handlePrintTrigger = () => window.print();
 
   const allSessions = plan.weeks.flatMap(w => w.sessions);
   const totalCount = allSessions.length;
@@ -658,7 +618,7 @@ export default function TrainingPlanDisplay({
                     </span>
                     <span className="text-sm font-black text-[#CCFF00] font-mono flex items-center gap-1.5 mt-1 leading-none uppercase">
                       <Flame className="w-4 h-4 text-amber-500" />
-                      {selectedSession.intensityPercent}% FCM
+                      {selectedSession.intensityPercent}% {language === 'fr' ? 'FC RÉS.' : 'HRR'}
                     </span>
                   </div>
                   <div className="bg-black/40 p-3 border border-white/10 rounded-none">
@@ -759,9 +719,8 @@ export default function TrainingPlanDisplay({
 
       {/* PRINTABLE DEDICATED SHEET */}
       {(() => {
-        const ageVal = athleteAge || 30;
-        const fcmVal = 220 - ageVal;
-        const fcrVal = 60;
+        const fcmVal = maxHr;
+        const fcrVal = restingHr;
         const reserveVal = Math.max(fcmVal - fcrVal, 0);
 
         const z1Min = Math.round(fcrVal + 0.5 * reserveVal);
@@ -781,14 +740,14 @@ export default function TrainingPlanDisplay({
               <div>
                 <h1 className="text-3xl font-black tracking-tight">{plan.objectiveLabel}</h1>
                 <p className="text-[10px] font-black mt-1 text-gray-700">
-                  ATHLETE DESIGNATION : {plan.levelLabel} • APP: STRIDE_AI CLINICAL SYSTEM REPORT
+                  {language === 'fr' ? 'NIVEAU' : 'LEVEL'} : {plan.levelLabel} • THUSSTRIDE
                 </p>
                 <p className="text-[9px] font-bold mt-0.5 text-gray-650 font-mono normal-case">
-                  ATHLETE NAME: {athleteEmail || 'learninhack@gmail.com'}
+                  {language === 'fr' ? 'ATHLÈTE' : 'ATHLETE'} : {athleteName}
                 </p>
               </div>
               <div className="text-right font-mono text-[9px] text-gray-500">
-                <span>STRIDE_AI v4.2 • {new Date().toLocaleDateString('fr-FR')}</span>
+                <span>THUSSTRIDE • {new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-GB')}</span>
               </div>
             </div>
             
@@ -870,7 +829,7 @@ export default function TrainingPlanDisplay({
                           </td>
                           <td className="py-2 pr-2 font-bold">{session.durationMinutes} MIN</td>
                           <td className="py-2 pr-2">{session.distanceKm ? `${session.distanceKm} KM` : 'N/A'}</td>
-                          <td className="py-2 pr-2 font-bold">{session.intensityPercent}% FCM</td>
+                          <td className="py-2 pr-2 font-bold">{session.intensityPercent}% {language === 'fr' ? 'FC rés.' : 'HRR'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -881,99 +840,12 @@ export default function TrainingPlanDisplay({
 
             {/* PRINT FOOTER */}
             <div className="mt-8 pt-4 border-t-2 border-black flex justify-between items-center text-[8px] font-mono text-gray-500">
-              <span>APP: STRIDE_AI CLINICAL ENGINE • ATHLETE NAME: {athleteEmail || 'learninhack@gmail.com'}</span>
-              <span>STRIDE_AI SYSTEM • CONFIDENTIAL & SECURITY COMPLIANT PRECRIPTION SUMMARY</span>
+              <span>THUSSTRIDE • {athleteName}</span>
+              <span>{language === 'fr' ? 'Document personnel – ne remplace pas un avis médical' : 'Personal document – not a substitute for medical advice'}</span>
             </div>
           </div>
         );
       })()}
-
-      {/* PRINT FALLBACK HELPER MODAL */}
-      {showPrintModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
-          <div className="bg-[#111] border border-white/10 w-full max-w-2xl rounded-none p-6 space-y-5 relative shadow-[0_0_50px_rgba(204,255,0,0.15)] my-8">
-            <button
-              onClick={() => {
-                setShowPrintModal(false);
-                setCopiedStatus(false);
-              }}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors p-1 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <div className="space-y-1">
-              <span className="text-[10px] bg-[#CCFF00] text-black px-2.5 py-0.5 rounded-none font-mono font-black tracking-widest uppercase inline-block">
-                {language === 'fr' ? 'SÉCURITÉ DE L\'IFRAME DU NAVIGATEUR' : 'BROWSER SANDBOX SECURITY'}
-              </span>
-              <h3 className="font-display font-black text-2xl text-white uppercase tracking-tighter italic">
-                {language === 'fr' ? 'SÉCURITÉ DU NAVIGATEUR ET EXPORT PDF' : 'PRINT BLOCKED BY BROWSER SANDBOX'}
-              </h3>
-            </div>
-
-            <div className="text-xs uppercase font-mono leading-relaxed space-y-3 p-4 bg-white/[0.03] border border-white/10 text-white/80">
-              <p className="font-extrabold text-[#CCFF00]">
-                {language === 'fr' ? 'POURQUOI CETTE ALERTE ?' : 'WHY IS THIS HAPPENING?'}
-              </p>
-              <p>
-                {language === 'fr'
-                  ? "Votre navigateur bloque l'appel direct d'impression car l'application est en prévisualisation dans l'iframe sécurisé (AI Studio sandbox). Aucun module tiers ne peut forcer l'affichage de l'impression système dans ce contexte."
-                  : "Your browser is blocking the native print dialog because this preview panel runs inside a sandboxed iframe. For direct native print and PDF download, you can follow the instructions below."}
-              </p>
-
-              <p className="font-extrabold text-[#CCFF00] pt-2">
-                {language === 'fr' ? 'COMMENT PROCÉDER (DEUX SOLUTIONS RAPIDES) :' : 'HOW TO PROCEED (TWO EASY OPTIONS) :'}
-              </p>
-              <ol className="list-decimal list-inside space-y-2 text-white pl-1.5 regular-case font-mono normal-case">
-                <li className="normal-case">
-                  <strong className="uppercase">{language === 'fr' ? 'Ouvrir dans un nouvel onglet (Recommandé) :' : 'Open in New Tab (Recommended) :'}</strong>{' '}
-                  {language === 'fr'
-                    ? "Cliquez sur le bouton de flèche oblique 'Open in New Tab' en haut à droite de l'aperçu de l'application. Dans ce nouvel onglet, le bouton d'impression fonctionnera instantanément !"
-                    : "Tap the small diagonal arrow icon / 'Open in New tab' on the top right corner of the live preview panel. Inside any standard tab, printing executes gracefully, instantly opening the OS PDF dialogue."}
-                </li>
-                <li className="normal-case">
-                  <strong className="uppercase">{language === 'fr' ? 'Copier le résumé brut textuel :' : 'Copy raw text outline :'}</strong>{' '}
-                  {language === 'fr'
-                    ? "Copiez le programme au format texte structuré pour le coller directement dans vos notes ou applications personnalisées."
-                    : "Copy the full 4-week structured schedule outline instantly to keep as a text log in your workout logs."}
-                </li>
-              </ol>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(getFullMarkdown());
-                  setCopiedStatus(true);
-                  setTimeout(() => setCopiedStatus(false), 2500);
-                }}
-                className="bg-white/5 hover:bg-[#CCFF00] hover:text-black hover:border-[#CCFF00] border border-white/10 text-white font-mono font-black uppercase text-[10px] tracking-wider transition-all px-4 py-3 flex items-center justify-center gap-2 flex-1 cursor-pointer"
-              >
-                <Copy className="w-4 h-4" />
-                <span>
-                  {copiedStatus 
-                    ? (language === 'fr' ? 'COPIÉ COMPLÈTEMENT !' : 'COPIED TO CLIPBOARD!') 
-                    : (language === 'fr' ? 'COPIER LE PROGRAMME EN TEXTE' : 'COPY ALL PRESCRIPTION TEXT')}
-                </span>
-              </button>
-
-              <button
-                onClick={() => {
-                  try {
-                    window.print();
-                  } catch(e) {
-                    console.warn(e);
-                  }
-                }}
-                className="bg-[#CCFF00] text-black hover:bg-white hover:text-black font-mono font-black uppercase text-[10px] tracking-wider transition-all px-4 py-3 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4" />
-                <span>{language === 'fr' ? 'TENTER L\'IMPRESSION DIRECTE' : 'FORCE PRINT DIRECTLY'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* IMMERSIVE WORKOUT SUMMARY MODAL */}
       {isWorkoutModalOpen && selectedSession && (
@@ -986,13 +858,16 @@ export default function TrainingPlanDisplay({
               <X className="w-4 h-4" />
             </button>
 
-            {/* Simulated Live Route Map Image Header */}
+            {/* Illustrative route header (not GPS data) */}
             <div className="relative h-64 w-full overflow-hidden bg-zinc-900 border-b border-white/10 flex items-center justify-center select-none">
               <img
                 src={getRouteMapImage(selectedSession.type)}
-                alt={`${selectedSession.title} simulated path telemetry`}
-                className="w-full h-full object-cover object-center filter saturate-125 brightness-90 animate-pulse-slow"
-                referrerPolicy="no-referrer"
+                alt={language === 'fr' ? `Illustration du type de parcours – ${selectedSession.title}` : `Route type illustration – ${selectedSession.title}`}
+                className="w-full h-full object-cover object-center filter saturate-125 brightness-90"
+                width={960}
+                height={540}
+                loading="lazy"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               
@@ -1012,7 +887,7 @@ export default function TrainingPlanDisplay({
 
               {/* GPS HUD Tag */}
               <div className="absolute top-4 left-4 bg-black/75 border border-[#CCFF00]/40 px-2 py-1 text-[8px] font-mono text-[#CCFF00] font-black tracking-widest uppercase">
-                📡 {selectedSession.type === 'repos' ? 'PHYSIO OFFLINE LOOPS' : 'STRIDE_AI GPS ROUTE TELEMETRY'}
+                {language === 'fr' ? 'ILLUSTRATION' : 'ILLUSTRATION'}
               </div>
             </div>
 
@@ -1043,7 +918,7 @@ export default function TrainingPlanDisplay({
                     {language === 'fr' ? 'INTENSITÉ CIBLE' : 'TARGET INTENSITY'}
                   </span>
                   <span className="text-sm font-black text-[#CCFF00] mt-1.5 leading-none block">
-                    ❤️ {selectedSession.intensityPercent}% FCM
+                    ❤️ {selectedSession.intensityPercent}% {language === 'fr' ? 'FC RÉS.' : 'HRR'}
                   </span>
                 </div>
 

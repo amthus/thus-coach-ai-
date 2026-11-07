@@ -45,7 +45,7 @@ export const ChangePasswordSchema = z.object({
 });
 
 export const ProfileSchema = z.object({
-  age: z.coerce.number().int().min(14).max(90),
+  age: z.coerce.number().int().min(15).max(90),
   level: z.enum(LEVELS),
   frequency: z.coerce.number().int().min(1).max(6),
   avgDistance: z.coerce.number().min(1).max(50),
@@ -106,7 +106,14 @@ export const WorkoutLogSchema = z.object({
   notes: trimmed(1000).optional().default(''),
 });
 
-export const WorkoutLogUpdateSchema = WorkoutLogSchema.omit({ planId: true, sessionId: true }).partial();
+// Explicit shape: no defaults, so omitted fields are left untouched by a PATCH.
+export const WorkoutLogUpdateSchema = z.object({
+  fatigue: WorkoutLogSchema.shape.fatigue,
+  actualDurationMinutes: WorkoutLogSchema.shape.actualDurationMinutes,
+  actualDistanceKm: WorkoutLogSchema.shape.actualDistanceKm,
+  avgHr: WorkoutLogSchema.shape.avgHr,
+  notes: trimmed(1000).optional(),
+});
 
 export const ChatSchema = z.object({
   message: trimmed(2000).min(1),

@@ -8,7 +8,7 @@ export type Language = 'fr' | 'en';
 export const i18n = {
   fr: {
     // Landing
-    landingTitle: "STRIDE_IA",
+    landingTitle: "THUSSTRIDE",
     landingTagline: "PROTOCOLES D'ENTRAÎNEMENT PHYSIOLOGIQUE SUR-MESURE",
     landingDesc: "Une architecture d'entraînement de course à pied assistée par une IA sécurisée. Calculez vos zones de fréquence cardiaque et profitez de séances de haute précision adaptées à vos antécédents physiologiques.",
     landingEnter: "ENTRER DANS L'APPLICATION",
@@ -69,7 +69,7 @@ export const i18n = {
     physioDesc: "Ajustez vos données pour calibrer précisément vos zones cibles d'entraînement sur le modèle de Karvonen.",
     physioFcm: "Fréquence Cardiaque Maximale (FCM)",
     physioFcr: "Fréquence Cardiaque de Repos (FCR)",
-    physioFcmDesc: "Estimée à 220 - âge ou rentrez votre valeur de test terrain.",
+    physioFcmDesc: "Estimée par la formule de Tanaka (208 − 0,7 × âge) ou saisissez votre valeur mesurée.",
     physioFcrDesc: "Mesurée le matin au réveil.",
     physioReserve: "Fréquence Cardiaque de Réserve",
     physioZoneName: "Zone d'Entraînement",
@@ -102,7 +102,7 @@ export const i18n = {
   },
   en: {
     // Landing
-    landingTitle: "STRIDE_IA",
+    landingTitle: "THUSSTRIDE",
     landingTagline: "TAILORED PHYSIOLOGICAL TRAINING PROTOCOLS",
     landingDesc: "An advanced running architecture powered by secure artificial intelligence. Compute your heart rate training zones and get high-precision workouts configured for your physical history.",
     landingEnter: "ENTER APPLICATION",
@@ -163,7 +163,7 @@ export const i18n = {
     physioDesc: "Fine-tune values to calibrate heart training targets according to the Karvonen calculation.",
     physioFcm: "Max Heart Rate (MHR)",
     physioFcr: "Resting Heart Rate (RHR)",
-    physioFcmDesc: "Traditionally estimated at 220 - age, or set your active test values.",
+    physioFcmDesc: "Estimated with the Tanaka formula (208 − 0.7 × age), or enter your measured value.",
     physioFcrDesc: "Measured in the morning upon waking up.",
     physioReserve: "Heart Rate Reserve (HRR)",
     physioZoneName: "HR Target Zone",

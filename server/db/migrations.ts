@@ -145,7 +145,7 @@ export async function migrate(db: Kysely<Database>): Promise<void> {
   for (const m of MIGRATIONS) {
     if (applied.has(m.name)) continue;
     await db.transaction().execute(async (trx) => {
-      await m.up(trx);
+      await m.up(trx as unknown as Kysely<any>);
       await trx.insertInto('app_migrations').values({ name: m.name, applied_at: new Date().toISOString() }).execute();
     });
   }
