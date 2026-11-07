@@ -133,3 +133,12 @@ describe('seo', () => {
     expect(renderSeoHead(tpl, '/does-not-exist', 'https://x').status).toBe(404);
   });
 });
+
+describe('typography', () => {
+  it('replaces long dashes in AI output with a simple hyphen', async () => {
+    const { normalizeDashes } = await import('../server/services/ai');
+    const em = String.fromCharCode(0x2014);
+    const en = String.fromCharCode(0x2013);
+    expect(normalizeDashes(`Endurance ${em} zone 2${en}3`)).toBe('Endurance - zone 2 - 3');
+  });
+});

@@ -313,3 +313,28 @@ export function Modal({
     </dialog>
   );
 }
+
+// ------------------------------------------------------------------ Read-only display
+/** Clean read-only presentation of saved values (shown instead of inputs until "Modifier"). */
+export function InfoList({ items, columns = 2 }: { items: { label: string; value: ReactNode }[]; columns?: 1 | 2 | 3 }) {
+  const cols = { 1: '', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-2 lg:grid-cols-3' }[columns];
+  return (
+    <dl className={`grid gap-x-6 gap-y-4 ${cols}`}>
+      {items.map((i) => (
+        <div key={i.label} className="min-w-0 border-b border-white/5 pb-3">
+          <dt className="text-xs font-medium uppercase tracking-wider text-white/40">{i.label}</dt>
+          <dd className="mt-1 break-words text-sm text-white">{i.value === '' || i.value == null ? <span className="text-white/30">-</span> : i.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="font-display text-lg font-semibold">{title}</h2>
+      {action}
+    </div>
+  );
+}

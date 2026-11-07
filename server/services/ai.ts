@@ -161,7 +161,7 @@ export class AiGateway {
         } else {
           text = await this.watsonxGenerate(`${system}\nRéponds uniquement avec du JSON valide, sans texte autour.`, prompt, 4000);
         }
-        const json = extractJson(text);
+        const json = extractJson(normalizeDashes(text));
         if (json !== null) return { value: json, provider };
       } catch (err) {
         console.warn(`[ai] ${provider} JSON generation failed:`, (err as Error).message);
@@ -195,7 +195,7 @@ export class AiGateway {
             .join('\n');
           text = await this.watsonxGenerate(system, transcript, opts.maxTokens ?? 700);
         }
-        text = text.trim();
+        text = normalizeDashes(text).trim();
         if (text) return { value: text, provider };
       } catch (err) {
         console.warn(`[ai] ${provider} text generation failed:`, (err as Error).message);
@@ -203,6 +203,13 @@ export class AiGateway {
     }
     return null;
   }
+}
+
+/** Typographic convention of the product: long dashes are rendered as a simple hyphen. */
+export function normalizeDashes(text: string): string {
+  const LONG_DASHES = new RegExp('\\s*[' + String.fromCharCode(0x2014, 0x2013) + ']\\s*', 'g');
+  const MINUS = new RegExp(String.fromCharCode(0x2212), 'g');
+  return text.replace(LONG_DASHES, ' - ').replace(MINUS, '-');
 }
 
 export function extractJson(text: string): unknown | null {

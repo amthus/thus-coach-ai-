@@ -43,7 +43,7 @@ export function sourceLabel(source: string | null | undefined, lang: 'fr' | 'en'
 }
 
 export function sessionDistance(s: WorkoutSession) {
-  return s.distanceKm ? `${s.distanceKm} km` : '—';
+  return s.distanceKm ? `${s.distanceKm} km` : '-';
 }
 
 export function downloadFile(filename: string, content: string, type = 'text/plain') {
@@ -60,14 +60,14 @@ export function downloadFile(filename: string, content: string, type = 'text/pla
 
 export function planToMarkdown(plan: TrainingPlan, athlete: string, lang: 'fr' | 'en') {
   const L = (fr: string, en: string) => (lang === 'fr' ? fr : en);
-  let md = `# ThusStride – ${plan.objectiveLabel}\n\n`;
+  let md = `# ThusStride - ${plan.objectiveLabel}\n\n`;
   md += `- ${L('Athlète', 'Athlete')} : ${athlete}\n- ${L('Niveau', 'Level')} : ${plan.levelLabel}\n`;
   md += `- ${L('Généré le', 'Generated on')} : ${new Date(plan.createdAt).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB')}\n\n`;
   md += `> ${plan.coachTips}\n\n`;
   for (const w of plan.weeks) {
-    md += `## ${L('Semaine', 'Week')} ${w.weekNumber} – ${w.focus}\n\n`;
+    md += `## ${L('Semaine', 'Week')} ${w.weekNumber} - ${w.focus}\n\n`;
     for (const s of w.sessions) {
-      md += `### ${s.day} – ${s.title}\n`;
+      md += `### ${s.day} - ${s.title}\n`;
       md += `- ${L('Durée', 'Duration')} : ${s.durationMinutes} min${s.distanceKm ? ` · ~${s.distanceKm} km` : ''}\n`;
       md += `- ${L('Intensité', 'Intensity')} : ${s.intensityPercent} % ${L('FC de réserve', 'HR reserve')}\n`;
       md += `- ${s.description}\n`;

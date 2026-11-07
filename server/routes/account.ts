@@ -68,7 +68,7 @@ export function accountRouter(ctx: AppContext) {
     }),
   );
 
-  /** GDPR art. 15 & 20 – right of access and data portability. */
+  /** GDPR art. 15 & 20 - right of access and data portability. */
   r.get(
     '/export',
     handler(async (req, res) => {
@@ -98,7 +98,7 @@ export function accountRouter(ctx: AppContext) {
     }),
   );
 
-  /** GDPR art. 17 – right to erasure. Cascades to all personal data. */
+  /** GDPR art. 17 - right to erasure. Cascades to all personal data. */
   r.post(
     '/delete',
     handler(async (req, res) => {

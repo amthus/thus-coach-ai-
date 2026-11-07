@@ -26,9 +26,9 @@ export default function Dashboard() {
 
   const kpis = [
     { icon: TrendingUp, label: t('Séances réalisées', 'Sessions done'), value: stats?.totalWorkouts ?? 0 },
-    { icon: Timer, label: t('Temps total', 'Total time'), value: stats ? `${Math.floor(stats.totalMinutes / 60)} h ${String(stats.totalMinutes % 60).padStart(2, '0')}` : '—' },
-    { icon: CalendarDays, label: t('Distance totale', 'Total distance'), value: stats ? `${stats.totalDistanceKm} km` : '—' },
-    { icon: Flame, label: t('Série en cours', 'Current streak'), value: stats ? `${stats.currentStreakDays} ${t('j', 'd')}` : '—' },
+    { icon: Timer, label: t('Temps total', 'Total time'), value: stats ? `${Math.floor(stats.totalMinutes / 60)} h ${String(stats.totalMinutes % 60).padStart(2, '0')}` : '-' },
+    { icon: CalendarDays, label: t('Distance totale', 'Total distance'), value: stats ? `${stats.totalDistanceKm} km` : '-' },
+    { icon: Flame, label: t('Série en cours', 'Current streak'), value: stats ? `${stats.currentStreakDays} ${t('j', 'd')}` : '-' },
   ];
 
   return (

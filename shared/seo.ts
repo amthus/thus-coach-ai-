@@ -11,7 +11,7 @@ export const SITE = {
   locale: 'fr_FR',
   themeColor: '#0A0A0A',
   ogImage: '/og-image.png',
-  author: 'Malthus Ametepe – ThusDev',
+  author: 'Malthus Ametepe - ThusDev',
 };
 
 export interface RouteSeo {
@@ -26,14 +26,14 @@ export interface RouteSeo {
 export const PUBLIC_ROUTES: RouteSeo[] = [
   {
     path: '/',
-    title: "ThusStride – Coach de course à pied IA et plan d'entraînement personnalisé",
+    title: "ThusStride - Coach de course à pied IA et plan d'entraînement personnalisé",
     description: SITE.defaultDescription,
     index: true,
     sitemap: { changefreq: 'weekly', priority: 1 },
   },
   {
     path: '/fonctionnalites',
-    title: 'Fonctionnalités – Plans, zones cardiaques et coach IA | ThusStride',
+    title: 'Fonctionnalités - Plans, zones cardiaques et coach IA | ThusStride',
     description:
       "Plan de 4 semaines adapté à votre niveau, zones de fréquence cardiaque Karvonen, journal d'entraînement, calibration de la charge selon la fatigue et calculateur d'allure.",
     index: true,
@@ -41,7 +41,7 @@ export const PUBLIC_ROUTES: RouteSeo[] = [
   },
   {
     path: '/a-propos',
-    title: 'À propos – Notre mission | ThusStride',
+    title: 'À propos - Notre mission | ThusStride',
     description:
       "ThusStride rend l'entraînement de course à pied scientifique accessible à tous pour progresser sans se blesser.",
     index: true,

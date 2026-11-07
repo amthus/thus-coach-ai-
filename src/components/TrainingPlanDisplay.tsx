@@ -841,7 +841,7 @@ export default function TrainingPlanDisplay({
             {/* PRINT FOOTER */}
             <div className="mt-8 pt-4 border-t-2 border-black flex justify-between items-center text-[8px] font-mono text-gray-500">
               <span>THUSSTRIDE • {athleteName}</span>
-              <span>{language === 'fr' ? 'Document personnel – ne remplace pas un avis médical' : 'Personal document – not a substitute for medical advice'}</span>
+              <span>{language === 'fr' ? 'Document personnel - ne remplace pas un avis médical' : 'Personal document - not a substitute for medical advice'}</span>
             </div>
           </div>
         );
@@ -862,7 +862,7 @@ export default function TrainingPlanDisplay({
             <div className="relative h-64 w-full overflow-hidden bg-zinc-900 border-b border-white/10 flex items-center justify-center select-none">
               <img
                 src={getRouteMapImage(selectedSession.type)}
-                alt={language === 'fr' ? `Illustration du type de parcours – ${selectedSession.title}` : `Route type illustration – ${selectedSession.title}`}
+                alt={language === 'fr' ? `Illustration du type de parcours - ${selectedSession.title}` : `Route type illustration - ${selectedSession.title}`}
                 className="w-full h-full object-cover object-center filter saturate-125 brightness-90"
                 width={960}
                 height={540}

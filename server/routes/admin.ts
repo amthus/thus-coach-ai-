@@ -7,7 +7,7 @@ import { requireAdmin } from '../middleware/auth';
 
 /**
  * Administration space. Follows data minimisation: admins see account metadata and
- * aggregate counts only — never health profiles, plans content or conversations.
+ * aggregate counts only - never health profiles, plans content or conversations.
  */
 export function adminRouter(ctx: AppContext) {
   const { db } = ctx;

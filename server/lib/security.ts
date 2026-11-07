@@ -8,7 +8,7 @@ const scrypt = promisify(crypto.scrypt) as (
   options: crypto.ScryptOptions,
 ) => Promise<Buffer>;
 
-// OWASP-recommended scrypt parameters (N=2^17, r=8, p=1) – ~128 MiB memory per hash.
+// OWASP-recommended scrypt parameters (N=2^17, r=8, p=1) - ~128 MiB memory per hash.
 // SCRYPT_LOG_N may lower the cost in automated tests only; stored hashes embed their own parameters.
 const PARAMS = { N: 2 ** Number(process.env.SCRYPT_LOG_N ?? 17), r: 8, p: 1, maxmem: 256 * 1024 * 1024 } as const;
 const KEYLEN = 64;

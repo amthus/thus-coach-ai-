@@ -106,7 +106,7 @@ export default function AdminPage() {
                       <p className="text-xs text-white/40">{u.email}</p>
                     </td>
                     <td className="py-3 text-white/60">{new Date(u.createdAt).toLocaleDateString(locale)}</td>
-                    <td className="py-3 text-white/60">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString(locale) : '—'}</td>
+                    <td className="py-3 text-white/60">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString(locale) : '-'}</td>
                     <td className="py-3">{u.plans}</td>
                     <td className="py-3">{u.workouts}</td>
                     <td className="py-3">

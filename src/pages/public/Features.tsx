@@ -23,7 +23,7 @@ export default function Features() {
       points: [
         t('FC max (Tanaka) ou mesurée, FC de repos et FC de réserve.', 'Max HR (Tanaka) or measured, resting HR and heart-rate reserve.'),
         t('5 zones cardiaques selon Karvonen.', '5 heart-rate zones using Karvonen.'),
-        t('Estimation de la VO2max (Uth–Sørensen) quand la FC de repos est mesurée.', 'VO2max estimate (Uth–Sørensen) when resting HR is measured.'),
+        t('Estimation de la VO2max (Uth-Sørensen) quand la FC de repos est mesurée.', 'VO2max estimate (Uth-Sørensen) when resting HR is measured.'),
         t('Repères nutritionnels selon la charge de la semaine et votre poids.', 'Nutrition guidance based on weekly load and body weight.'),
       ],
     },
@@ -31,7 +31,7 @@ export default function Features() {
       title: t('Suivi et ajustement', 'Tracking and adjustment'),
       points: [
         t('Journal : durée et distance réelles, FC moyenne, notes.', 'Log: actual duration and distance, average HR, notes.'),
-        t('Fatigue ressentie (1–10) et recommandation de charge immédiate.', 'Perceived fatigue (1–10) and immediate load recommendation.'),
+        t('Fatigue ressentie (1-10) et recommandation de charge immédiate.', 'Perceived fatigue (1-10) and immediate load recommendation.'),
         t('Tableau de bord : volume des 8 dernières semaines, régularité, fatigue moyenne.', 'Dashboard: last 8 weeks volume, streak, average fatigue.'),
         t('Rappel quotidien à l’heure de votre choix.', 'Daily reminder at the time you choose.'),
       ],

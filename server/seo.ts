@@ -55,7 +55,7 @@ export function renderSeoHead(template: string, pathname: string, appUrl: string
     `<meta property="og:image" content="${image}" />`,
     `<meta property="og:image:width" content="1200" />`,
     `<meta property="og:image:height" content="630" />`,
-    `<meta property="og:image:alt" content="${SITE.name} – ${escapeHtml(SITE.tagline)}" />`,
+    `<meta property="og:image:alt" content="${SITE.name} - ${escapeHtml(SITE.tagline)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${title}" />`,
     `<meta name="twitter:description" content="${desc}" />`,

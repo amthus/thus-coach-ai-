@@ -61,7 +61,7 @@ Let us step through our actual visual application to observe this architecture i
 3. **The Multi-Coach Selection**: The user selects their preferred training guide. Coach Michel focuses on performance; Coach Chloe enforces safety; Coach Hélène provides sports-science nutrition tips.
 4. **Interactive Generation**: Clicking on "Generate Plan" triggers our Express API. The server coordinates with Google Gemini to synthesize a complete calendar of active sessions.
 5. **Real-Time Calibrator**: With the plan created, the calendar displays target zones and exact durations. If a session is completed with high fatigue, the system generates an immediate physiological volume adjustment.
-6. **Physiology Panel**: From the measured resting heart rate, the platform computes Karvonen zones and a VO2max estimate (Uth–Sørensen); nothing is simulated.
+6. **Physiology Panel**: From the measured resting heart rate, the platform computes Karvonen zones and a VO2max estimate (Uth-Sørensen); nothing is simulated.
 7. **The Natural Language Coach Chat**: In the chat panel, the runner can hold an interactive training consultation with their selected coach, obtaining tailored physiological advice based directly on their recorded workout metrics.
 
 ---

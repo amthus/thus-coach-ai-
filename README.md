@@ -2,7 +2,7 @@
 
 # ThusStride
 
-**Coach de course à pied intelligent** : plan d'entraînement personnalisé, zones cardiaques (Karvonen), journal d'entraînement, ajustement de la charge selon la fatigue et coach IA — dans un espace personnel sécurisé.
+**Coach de course à pied intelligent** : plan d'entraînement personnalisé, zones cardiaques (Karvonen), journal d'entraînement, ajustement de la charge selon la fatigue et coach IA - dans un espace personnel sécurisé.
 
 ## Fonctionnalités
 
@@ -13,8 +13,8 @@
 | Administration (`/admin`) | Indicateurs plateforme, état des services, gestion des rôles (sans accès aux données de santé) |
 
 - **Plans** : générés par Google Gemini ou IBM Granite (sortie validée par schéma), sinon par un **moteur de règles scientifiques** déterministe (progression ≤ 10 %/semaine, semaine d'assimilation, aucune séance intense en cas de douleur). La source réelle est toujours affichée.
-- **Physiologie** : FC max (Tanaka ou mesurée), zones Karvonen, VO2max (Uth–Sørensen) uniquement si la FC de repos est mesurée.
-- **Suivi** : validation des séances, fatigue (RPE 1–10), durée/distance/FC réelles, recommandation de charge, statistiques sur 8 semaines, série en cours.
+- **Physiologie** : FC max (Tanaka ou mesurée), zones Karvonen, VO2max (Uth-Sørensen) uniquement si la FC de repos est mesurée.
+- **Suivi** : validation des séances, fatigue (RPE 1-10), durée/distance/FC réelles, recommandation de charge, statistiques sur 8 semaines, série en cours.
 - **Rappels** : notification quotidienne à l'heure choisie (navigateur).
 
 ## Architecture
@@ -25,12 +25,12 @@ api/index.ts         Point d'entrée serverless Vercel
 server/
   app.ts             Express : helmet/CSP, compression, rate limiting, CSRF, routes, SEO
   config.ts          Variables d'environnement validées (zod)
-  db/                Kysely – PostgreSQL (prod) ou SQLite intégré à Node (dev/tests), migrations
+  db/                Kysely - PostgreSQL (prod) ou SQLite intégré à Node (dev/tests), migrations
   middleware/auth.ts Sessions (cookie HttpOnly, jeton haché en base), rôles, CSRF
   routes/            auth, account (profil, paramètres, export, suppression), training, chat, admin
   services/          ai (Gemini / watsonx), planEngine (règles), mailer (SMTP)
   seo.ts             Métadonnées par route injectées dans le HTML, robots.txt, sitemap.xml
-shared/              Schémas zod, types, physiologie, coachs, SEO — partagés client/serveur
+shared/              Schémas zod, types, physiologie, coachs, SEO - partagés client/serveur
 src/
   app/               Routeur (pages chargées à la demande) et gardes d'accès
   layouts/           Public, espace connecté
@@ -84,4 +84,4 @@ Métadonnées par page injectées côté serveur (titre, description, canonical,
 
 ## Licence
 
-Apache-2.0 — conçu par ThusDev (Malthus Ametepe).
+Apache-2.0 - conçu par ThusDev (Malthus Ametepe).

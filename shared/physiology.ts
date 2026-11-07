@@ -1,9 +1,9 @@
 /**
  * Evidence-based physiology helpers. Pure functions, shared by client and server.
  *
- * - Max HR: Tanaka et al. (2001) 208 − 0.7 × age, unless the athlete measured it.
+ * - Max HR: Tanaka et al. (2001) 208 - 0.7 × age, unless the athlete measured it.
  * - Zones: Karvonen heart-rate-reserve method.
- * - VO2max: Uth–Sørensen–Overgaard–Pedersen (2004) 15.3 × HRmax / HRrest.
+ * - VO2max: Uth-Sørensen-Overgaard-Pedersen (2004) 15.3 × HRmax / HRrest.
  */
 
 export const DEFAULT_RESTING_HR = 65;

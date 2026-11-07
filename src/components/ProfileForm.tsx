@@ -47,12 +47,14 @@ export function ProfileForm({
   loading,
   error,
   onSubmit,
+  onCancel,
 }: {
   initial?: UserProfile | null;
   submitLabel: string;
   loading: boolean;
   error?: string | null;
   onSubmit: (p: ProfileInput) => void;
+  onCancel?: () => void;
 }) {
   const { t, lang } = useI18n();
   const { data: meta } = useMeta();
@@ -100,9 +102,9 @@ export function ProfileForm({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label={t('Niveau', 'Level')} value={form.level} onChange={(e) => set('level', e.target.value)}>
-            <option value="debutant">{t('Débutant – moins de 6 mois', 'Beginner – under 6 months')}</option>
-            <option value="intermediaire">{t('Intermédiaire – course régulière', 'Intermediate – regular running')}</option>
-            <option value="avance">{t('Confirmé – entraînement structuré', 'Advanced – structured training')}</option>
+            <option value="debutant">{t('Débutant - moins de 6 mois', 'Beginner - under 6 months')}</option>
+            <option value="intermediaire">{t('Intermédiaire - course régulière', 'Intermediate - regular running')}</option>
+            <option value="avance">{t('Confirmé - entraînement structuré', 'Advanced - structured training')}</option>
           </Select>
           <Select label={t('Objectif principal', 'Main goal')} value={form.objective} onChange={(e) => set('objective', e.target.value)}>
             <option value="sante">{t('Santé et remise en forme', 'Health and fitness')}</option>
@@ -189,9 +191,16 @@ export function ProfileForm({
         </Select>
       </fieldset>
 
-      <Button type="submit" size="lg" loading={loading} className="w-full sm:w-auto">
-        {submitLabel}
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button type="submit" size="lg" loading={loading} className="w-full sm:w-auto">
+          {submitLabel}
+        </Button>
+        {onCancel && (
+          <Button variant="ghost" size="lg" onClick={onCancel} disabled={loading}>
+            {t('Annuler', 'Cancel')}
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

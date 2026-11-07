@@ -10,7 +10,7 @@ export interface AppNotification {
   tone: 'info' | 'warn' | 'success';
 }
 
-/** Notifications are derived from real account data – nothing is simulated. */
+/** Notifications are derived from real account data - nothing is simulated. */
 export function useNotifications(
   user: PublicUser | null | undefined,
   plan: TrainingPlan | null | undefined,
@@ -37,7 +37,7 @@ export function useNotifications(
       list.push({
         id: `next-${next.session.id}`,
         title: L('Prochaine séance', 'Next session'),
-        body: `${next.session.day} – ${next.session.title} (${next.session.durationMinutes} min)`,
+        body: `${next.session.day} - ${next.session.title} (${next.session.durationMinutes} min)`,
         href: '/app/plan',
         tone: 'info',
       });

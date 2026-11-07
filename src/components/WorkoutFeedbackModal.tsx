@@ -11,12 +11,12 @@ const FATIGUE_LABEL = (n: number, t: (fr: string, en: string) => string) =>
   n <= 2
     ? t('Très facile', 'Very easy')
     : n <= 4
-      ? t('Modérée – bonne assimilation', 'Moderate – well absorbed')
+      ? t('Modérée - bonne assimilation', 'Moderate - well absorbed')
       : n <= 6
-        ? t('Sensible – adaptation correcte', 'Noticeable – normal adaptation')
+        ? t('Sensible - adaptation correcte', 'Noticeable - normal adaptation')
         : n <= 8
-          ? t('Élevée – charge importante', 'High – heavy load')
-          : t('Extrême – risque de surentraînement', 'Extreme – overtraining risk');
+          ? t('Élevée - charge importante', 'High - heavy load')
+          : t('Extrême - risque de surentraînement', 'Extreme - overtraining risk');
 
 /** Post-run feedback: actual metrics + perceived fatigue, then load-adjustment advice. */
 export function WorkoutFeedbackModal({ workout, onClose }: { workout: WorkoutLog | null; onClose: () => void }) {

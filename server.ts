@@ -1,5 +1,5 @@
 /**
- * ThusStride – HTTP server entry point (development and self-hosted production).
+ * ThusStride - HTTP server entry point (development and self-hosted production).
  * For Vercel, see api/index.ts.
  */
 import path from 'node:path';

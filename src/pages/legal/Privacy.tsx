@@ -8,8 +8,8 @@ export default function Privacy() {
     <LegalPage path="/confidentialite" title={t('Politique de confidentialité', 'Privacy policy')}>
       <p>
         {t(
-          `ThusStride respecte le Règlement général sur la protection des données (RGPD – UE 2016/679) et la loi Informatique et Libertés. Le responsable du traitement est ${LEGAL.publisher}, joignable à ${LEGAL.contactEmail}.`,
-          `ThusStride complies with the General Data Protection Regulation (GDPR – EU 2016/679). The data controller is ${LEGAL.publisher}, reachable at ${LEGAL.contactEmail}.`,
+          `ThusStride respecte le Règlement général sur la protection des données (RGPD - UE 2016/679) et la loi Informatique et Libertés. Le responsable du traitement est ${LEGAL.publisher}, joignable à ${LEGAL.contactEmail}.`,
+          `ThusStride complies with the General Data Protection Regulation (GDPR - EU 2016/679). The data controller is ${LEGAL.publisher}, reachable at ${LEGAL.contactEmail}.`,
         )}
       </p>
 
@@ -24,9 +24,9 @@ export default function Privacy() {
 
       <h2>{t('2. Finalités et bases légales', '2. Purposes and legal bases')}</h2>
       <ul>
-        <li>{t('Fourniture du service (compte, plans, journal, coach) – exécution du contrat (art. 6.1.b).', 'Providing the service (account, plans, log, coach) – performance of contract (art. 6.1.b).')}</li>
-        <li>{t('Traitement des données de santé – consentement explicite (art. 9.2.a), recueilli à l’inscription.', 'Processing of health data – explicit consent (art. 9.2.a), collected at sign-up.')}</li>
-        <li>{t('Sécurité (limitation des tentatives, journaux d’erreurs) – intérêt légitime (art. 6.1.f).', 'Security (rate limiting, error logs) – legitimate interest (art. 6.1.f).')}</li>
+        <li>{t('Fourniture du service (compte, plans, journal, coach) - exécution du contrat (art. 6.1.b).', 'Providing the service (account, plans, log, coach) - performance of contract (art. 6.1.b).')}</li>
+        <li>{t('Traitement des données de santé - consentement explicite (art. 9.2.a), recueilli à l’inscription.', 'Processing of health data - explicit consent (art. 9.2.a), collected at sign-up.')}</li>
+        <li>{t('Sécurité (limitation des tentatives, journaux d’erreurs) - intérêt légitime (art. 6.1.f).', 'Security (rate limiting, error logs) - legitimate interest (art. 6.1.f).')}</li>
       </ul>
 
       <h2>{t('3. Destinataires et sous-traitants', '3. Recipients and processors')}</h2>

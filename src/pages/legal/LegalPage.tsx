@@ -6,7 +6,7 @@ import { PUBLIC_ROUTES } from '../../../shared/seo';
 export const LEGAL = {
   publisher: import.meta.env.VITE_LEGAL_PUBLISHER || 'Malthus Ametepe (ThusDev)',
   contactEmail: import.meta.env.VITE_CONTACT_EMAIL || 'contact@thusstride.app',
-  host: 'Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis – vercel.com',
+  host: 'Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis - vercel.com',
   updatedAt: '2026-11-07',
 };
 

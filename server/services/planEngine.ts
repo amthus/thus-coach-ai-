@@ -29,8 +29,8 @@ const OBJECTIVE_LABEL = {
   en: { sante: 'Health and fitness', '5k': '5K goal', '10k': '10K goal', semi: 'Half-marathon goal', marathon: 'Marathon goal', vitesse: 'VO2max development' },
 } as const;
 const LEVEL_LABEL = {
-  fr: { debutant: 'Débutant – progression prudente', intermediaire: 'Intermédiaire – développement', avance: 'Confirmé – performance' },
-  en: { debutant: 'Beginner – careful progression', intermediaire: 'Intermediate – development', avance: 'Advanced – performance' },
+  fr: { debutant: 'Débutant - progression prudente', intermediaire: 'Intermédiaire - développement', avance: 'Confirmé - performance' },
+  en: { debutant: 'Beginner - careful progression', intermediaire: 'Intermediate - development', avance: 'Advanced - performance' },
 } as const;
 
 // Typical easy pace (min/km) per level, used to translate time into distance.
@@ -118,7 +118,7 @@ function buildSession(
         description: txt(
           lang,
           'Allure facile en zone 2 (60-70 % de la FC de réserve). Développe la base aérobie et la récupération.',
-          'Easy zone-2 pace (60–70 % of heart-rate reserve). Builds aerobic base and recovery.',
+          'Easy zone-2 pace (60-70 % of heart-rate reserve). Builds aerobic base and recovery.',
         ),
         intensityPercent: 65,
         warmup: txt(lang, '5 min de marche ou trot très lent', '5 min walk or very slow jog'),
@@ -188,12 +188,12 @@ export function generateRulesPlan(profile: ProfileInput, lang: Lang = 'fr'): Gen
   };
 }
 
-/** Rule-based load adjustment advice from post-run fatigue (RPE 1–10). */
+/** Rule-based load adjustment advice from post-run fatigue (RPE 1-10). */
 export function rulesFatigueAdvice(fatigue: number, sessionType: SessionType, lang: Lang = 'fr'): string {
   if (fatigue >= 9)
-    return txt(lang, 'Fatigue très élevée : prenez 48 h de repos complet, puis remplacez la prochaine séance intense par un footing de 20 à 30 min. Si la fatigue persiste, réduisez le volume de la semaine de 20 %.', 'Very high fatigue: take 48 h of complete rest, then replace the next hard session with a 20–30 min easy run. If fatigue persists, cut weekly volume by 20 %.');
+    return txt(lang, 'Fatigue très élevée : prenez 48 h de repos complet, puis remplacez la prochaine séance intense par un footing de 20 à 30 min. Si la fatigue persiste, réduisez le volume de la semaine de 20 %.', 'Very high fatigue: take 48 h of complete rest, then replace the next hard session with a 20-30 min easy run. If fatigue persists, cut weekly volume by 20 %.');
   if (fatigue >= 7)
-    return txt(lang, 'Fatigue élevée : réduisez la charge de 15 à 20 % sur les prochains jours et transformez la prochaine séance de fractionné ou de seuil en endurance fondamentale.', 'High fatigue: reduce load by 15–20 % over the next days and turn the next interval or threshold session into an easy run.');
+    return txt(lang, 'Fatigue élevée : réduisez la charge de 15 à 20 % sur les prochains jours et transformez la prochaine séance de fractionné ou de seuil en endurance fondamentale.', 'High fatigue: reduce load by 15-20 % over the next days and turn the next interval or threshold session into an easy run.');
   if (fatigue >= 5)
     return txt(lang, `Fatigue modérée, normale après une séance de type ${sessionType}. Gardez le plan, soignez le sommeil et l'hydratation, et restez strictement en zone 2 lors du prochain footing.`, `Moderate fatigue, normal after a ${sessionType} session. Keep the plan, prioritise sleep and hydration, and stay strictly in zone 2 on your next easy run.`);
   return txt(lang, 'Très bonne assimilation. Poursuivez le plan tel quel ; la progression de la semaine suivante est adaptée.', 'Great adaptation. Continue the plan as is; next week\'s progression is appropriate.');

@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Calculator, Download, LogOut, Shield, User } from 'lucide-react';
-import { Alert, Button, Card, Checkbox, Input, Modal, PageHeader } from '../../components/ui/primitives';
+import { Calculator, Download, LogOut, Pencil, Shield, User } from 'lucide-react';
+import { Alert, Button, Card, Checkbox, InfoList, Input, Modal, PageHeader, SectionHeader } from '../../components/ui/primitives';
 import { useToast } from '../../components/ui/Toaster';
 import { LanguageSwitch } from '../../components/LanguageSwitch';
 import { passwordErrorText } from '../auth/AuthCard';
@@ -22,6 +22,8 @@ export default function SettingsPage() {
   const update = useUpdateSettings();
   const logout = useLogout();
 
+  const [editingAccount, setEditingAccount] = useState(false);
+  const [editingPw, setEditingPw] = useState(false);
   const [name, setName] = useState(user?.name ?? '');
   const [time, setTime] = useState(user?.reminderTime ?? '08:00');
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>(
@@ -40,6 +42,7 @@ export default function SettingsPage() {
     mutationFn: () => api.post('/auth/change-password', { currentPassword: pw.current, newPassword: pw.next }),
     onSuccess: () => {
       setPw({ current: '', next: '' });
+      setEditingPw(false);
       toast.success(t('Mot de passe modifié. Vos autres sessions ont été déconnectées.', 'Password changed. Your other sessions were signed out.'));
     },
   });
@@ -62,7 +65,15 @@ export default function SettingsPage() {
 
   const saveProfile = (e: FormEvent) => {
     e.preventDefault();
-    update.mutate({ name, reminderTime: time }, { onSuccess: () => toast.success(t('Paramètres enregistrés.', 'Settings saved.')) });
+    update.mutate(
+      { name, reminderTime: time },
+      {
+        onSuccess: () => {
+          setEditingAccount(false);
+          toast.success(t('Paramètres enregistrés.', 'Settings saved.'));
+        },
+      },
+    );
   };
 
   const toggleReminders = async (enabled: boolean) => {
@@ -91,24 +102,54 @@ export default function SettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="font-display text-lg font-semibold">{t('Compte', 'Account')}</h2>
-          <form onSubmit={saveProfile} className="mt-4 space-y-4">
-            <Input label={t('Prénom ou pseudo', 'First name or nickname')} value={name} minLength={2} maxLength={80} onChange={(e) => setName(e.target.value)} />
-            <Input label={t('Adresse e-mail', 'E-mail address')} value={user?.email ?? ''} disabled hint={t("L'adresse e-mail sert d'identifiant.", 'The e-mail address is your login.')} />
-            <div className="space-y-1.5">
-              <span className="block text-sm font-medium text-white/80">{t('Langue', 'Language')}</span>
-              <LanguageSwitch />
+          <SectionHeader
+            title={t('Compte', 'Account')}
+            action={
+              !editingAccount && (
+                <Button size="sm" variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => setEditingAccount(true)}>
+                  {t('Modifier', 'Edit')}
+                </Button>
+              )
+            }
+          />
+          {editingAccount ? (
+            <form onSubmit={saveProfile} className="mt-4 space-y-4">
+              <Input label={t('Prénom ou pseudo', 'First name or nickname')} value={name} minLength={2} maxLength={80} onChange={(e) => setName(e.target.value)} />
+              <Input label={t('Adresse e-mail', 'E-mail address')} value={user?.email ?? ''} disabled hint={t("L'adresse e-mail sert d'identifiant.", 'The e-mail address is your login.')} />
+              <div className="space-y-1.5">
+                <span className="block text-sm font-medium text-white/80">{t('Langue', 'Language')}</span>
+                <LanguageSwitch />
+              </div>
+              <Input label={t('Heure du rappel quotidien', 'Daily reminder time')} type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+              <div className="flex gap-2">
+                <Button type="submit" loading={update.isPending}>
+                  {t('Enregistrer', 'Save')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setName(user?.name ?? '');
+                    setTime(user?.reminderTime ?? '08:00');
+                    setEditingAccount(false);
+                  }}
+                >
+                  {t('Annuler', 'Cancel')}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="mt-4">
+              <InfoList
+                columns={1}
+                items={[
+                  { label: t('Prénom ou pseudo', 'First name or nickname'), value: user?.name },
+                  { label: t('Adresse e-mail', 'E-mail address'), value: user?.email },
+                  { label: t('Langue', 'Language'), value: user?.language === 'en' ? 'English' : 'Français' },
+                  { label: t('Heure du rappel quotidien', 'Daily reminder time'), value: user?.reminderTime },
+                ]}
+              />
             </div>
-            <Input
-              label={t('Heure du rappel quotidien', 'Daily reminder time')}
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-            <Button type="submit" loading={update.isPending}>
-              {t('Enregistrer', 'Save')}
-            </Button>
-          </form>
+          )}
           <div className="mt-6 flex flex-wrap gap-2 border-t border-white/5 pt-4">
             <Link to="/app/profil" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm hover:border-white/25">
               <User className="h-4 w-4" /> {t('Profil athlète', 'Athlete profile')}
@@ -149,7 +190,19 @@ export default function SettingsPage() {
           </Card>
 
           <Card>
-            <h2 className="font-display text-lg font-semibold">{t('Mot de passe', 'Password')}</h2>
+            <SectionHeader
+              title={t('Mot de passe', 'Password')}
+              action={
+                !editingPw && (
+                  <Button size="sm" variant="secondary" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => setEditingPw(true)}>
+                    {t('Modifier', 'Edit')}
+                  </Button>
+                )
+              }
+            />
+            {!editingPw ? (
+              <p className="mt-4 font-mono text-sm tracking-widest text-white/50">••••••••••</p>
+            ) : (
             <form onSubmit={submitPw} className="mt-4 space-y-4">
               {changePw.error && <Alert tone="error">{changePw.error instanceof ApiError ? changePw.error.message : t('Erreur.', 'Error.')}</Alert>}
               <Input label={t('Mot de passe actuel', 'Current password')} type="password" autoComplete="current-password" value={pw.current} onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))} />
@@ -161,10 +214,24 @@ export default function SettingsPage() {
                 error={pwError}
                 onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
               />
-              <Button type="submit" variant="secondary" loading={changePw.isPending} disabled={!pw.current || !pw.next}>
-                {t('Changer le mot de passe', 'Change password')}
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" loading={changePw.isPending} disabled={!pw.current || !pw.next}>
+                  {t('Enregistrer', 'Save')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setPw({ current: '', next: '' });
+                    setPwError(undefined);
+                    changePw.reset();
+                    setEditingPw(false);
+                  }}
+                >
+                  {t('Annuler', 'Cancel')}
+                </Button>
+              </div>
             </form>
+            )}
           </Card>
         </div>
       </div>

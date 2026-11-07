@@ -3,7 +3,7 @@ interface LogoMarkProps {
   className?: string;
 }
 
-/** ThusStride mark: two forward chevrons – the stride – on a dark tile. */
+/** ThusStride mark: two forward chevrons - the stride - on a dark tile. */
 export function LogoMark({ size = 32, className }: LogoMarkProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" className={className} aria-hidden="true" focusable="false">

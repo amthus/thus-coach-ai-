@@ -24,8 +24,8 @@ export default function Faq() {
       {
         q: t('Comment sont calculées mes zones cardiaques ?', 'How are my heart-rate zones computed?'),
         a: t(
-          'Avec la méthode de Karvonen : FC cible = FC repos + % × (FC max − FC repos). Si vous ne connaissez pas votre FC max, elle est estimée par la formule de Tanaka (208 − 0,7 × âge).',
-          'Using the Karvonen method: target HR = resting HR + % × (max HR − resting HR). If you do not know your max HR, it is estimated with the Tanaka formula (208 − 0.7 × age).',
+          'Avec la méthode de Karvonen : FC cible = FC repos + % × (FC max - FC repos). Si vous ne connaissez pas votre FC max, elle est estimée par la formule de Tanaka (208 - 0,7 × âge).',
+          'Using the Karvonen method: target HR = resting HR + % × (max HR - resting HR). If you do not know your max HR, it is estimated with the Tanaka formula (208 - 0.7 × age).',
         ),
       },
       {

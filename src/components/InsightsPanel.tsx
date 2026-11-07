@@ -10,7 +10,7 @@ function adviceFor(p: UserProfile, t: (fr: string, en: string) => string): strin
   const out: string[] = [];
   const injury = p.injuryHistory.toLowerCase();
   if (/genou|knee|rotule|patell/.test(injury)) {
-    out.push(t('Genou : privilégiez une cadence élevée (170-180 pas/min) et des surfaces souples pour réduire la charge fémoro-patellaire.', 'Knee: favour a high cadence (170–180 steps/min) and soft surfaces to reduce patellofemoral load.'));
+    out.push(t('Genou : privilégiez une cadence élevée (170-180 pas/min) et des surfaces souples pour réduire la charge fémoro-patellaire.', 'Knee: favour a high cadence (170-180 steps/min) and soft surfaces to reduce patellofemoral load.'));
   } else if (/cheville|ankle|achille|tendon/.test(injury)) {
     out.push(t('Cheville / tendon : évitez les terrains instables et renforcez les mollets (montées sur pointes, 3 × 15).', 'Ankle / tendon: avoid uneven ground and strengthen calves (calf raises, 3 × 15).'));
   } else if (injury.trim()) {
@@ -85,7 +85,7 @@ export function InsightsPanel({ profile }: { profile: UserProfile }) {
             </dd>
           </div>
         </dl>
-        {vo2 && <p className="mt-3 text-xs text-white/40">{t('Estimation Uth–Sørensen (15,3 × FCmax / FCrepos).', 'Uth–Sørensen estimate (15.3 × HRmax / HRrest).')}</p>}
+        {vo2 && <p className="mt-3 text-xs text-white/40">{t('Estimation Uth-Sørensen (15,3 × FCmax / FCrepos).', 'Uth-Sørensen estimate (15.3 × HRmax / HRrest).')}</p>}
       </Card>
 
       <Card>
@@ -96,11 +96,11 @@ export function InsightsPanel({ profile }: { profile: UserProfile }) {
               <span>
                 <span className="font-semibold text-lime">Z{z.zone}</span>{' '}
                 <span className="text-white/50">
-                  {z.minPct}–{z.maxPct} %
+                  {z.minPct}-{z.maxPct} %
                 </span>
               </span>
               <span className="font-mono">
-                {z.minBpm}–{z.maxBpm} bpm
+                {z.minBpm}-{z.maxBpm} bpm
               </span>
             </li>
           ))}

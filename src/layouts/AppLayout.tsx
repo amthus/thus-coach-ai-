@@ -36,7 +36,7 @@ export default function AppLayout() {
   const next = nextSession(plan, completedMap(workouts, plan?.id));
   useDailyReminder(
     user,
-    next ? `${next.session.day} – ${next.session.title} (${next.session.durationMinutes} min)` : null,
+    next ? `${next.session.day} - ${next.session.title} (${next.session.durationMinutes} min)` : null,
     t("Rappel d'entraînement ThusStride", 'ThusStride training reminder'),
   );
 

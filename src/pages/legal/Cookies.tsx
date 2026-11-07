@@ -14,7 +14,7 @@ export default function Cookies() {
       <h2>{t('Cookie utilisé', 'Cookie used')}</h2>
       <ul>
         <li>
-          <strong>ts_session</strong> –{' '}
+          <strong>ts_session</strong> -{' '}
           {t(
             'maintient votre connexion. HttpOnly, Secure, SameSite=Lax. Durée : 30 jours maximum, supprimé à la déconnexion.',
             'keeps you signed in. HttpOnly, Secure, SameSite=Lax. Lifetime: 30 days maximum, removed on sign-out.',
@@ -24,10 +24,10 @@ export default function Cookies() {
       <h2>{t('Stockage local', 'Local storage')}</h2>
       <ul>
         <li>
-          <strong>ts_language</strong> – {t('mémorise la langue choisie.', 'remembers the chosen language.')}
+          <strong>ts_language</strong> - {t('mémorise la langue choisie.', 'remembers the chosen language.')}
         </li>
         <li>
-          <strong>ts_reminder_*</strong> – {t('évite d’afficher deux fois le rappel quotidien.', 'prevents showing the daily reminder twice.')}
+          <strong>ts_reminder_*</strong> - {t('évite d’afficher deux fois le rappel quotidien.', 'prevents showing the daily reminder twice.')}
         </li>
       </ul>
       <p>{t('Les polices de caractères sont hébergées par ThusStride : aucune requête n’est envoyée à des services tiers lors de votre navigation.', 'Fonts are self-hosted: no request is sent to third-party services while you browse.')}</p>

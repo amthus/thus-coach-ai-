@@ -31,7 +31,7 @@ export default function PublicLayout() {
       </a>
       <header className="sticky top-0 z-40 border-b border-white/5 bg-ink/80 backdrop-blur-lg">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6" aria-label={t('Navigation principale', 'Main navigation')}>
-          <Link to="/" aria-label="ThusStride – accueil">
+          <Link to="/" aria-label="ThusStride - accueil">
             <Logo size={30} />
           </Link>
           <ul className="hidden items-center gap-7 text-sm lg:flex">
@@ -139,7 +139,7 @@ export default function PublicLayout() {
           </div>
         </div>
         <div className="border-t border-white/5 py-6 text-center text-xs text-white/40">
-          © {new Date().getFullYear()} ThusStride · {t('Conçu par', 'Built by')} ThusDev – Malthus Ametepe ·{' '}
+          © {new Date().getFullYear()} ThusStride · {t('Conçu par', 'Built by')} ThusDev - Malthus Ametepe ·{' '}
           {t("Ne remplace pas un avis médical.", 'Not a substitute for medical advice.')}
         </div>
       </footer>
